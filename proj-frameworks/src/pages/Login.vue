@@ -1,56 +1,130 @@
-<script setup>
-import { ref } from 'vue';
+﻿<script setup>
+import { reactive, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/auth';
-import { useRouter } from 'vue-router';
 
-const authStore = useAuthStore();
+const route = useRoute();
 const router = useRouter();
+const authStore = useAuthStore();
 
-const email = ref('');
-const password = ref('');
 const loading = ref(false);
+const errorMessage = ref('');
+const showPassword = ref(false);
 
-const handleLogin = async () => {
+const form = reactive({
+  email: '',
+  password: '',
+});
+
+async function handleLogin() {
+  if (!form.email || !form.password) {
+    errorMessage.value = 'Preencha e-mail e senha.';
+    return;
+  }
+
   loading.value = true;
-  
-  // SIMULAÇÃO: Espera 1 segundo como se fosse uma API
-  setTimeout(() => {
-    // 1. Dados fakes que viriam do seu backend
-    const mockToken = 'meu-token-jwt-gerado-pela-api';
-    const mockUser = { id: 1, name: 'William Leite', email: email.value };
+  errorMessage.value = '';
 
-    // 2. Usando a nossa Store profissional
-    authStore.setToken(mockToken);
-    authStore.setUser(mockUser);
-
+  try {
+    await authStore.login(form);
+    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/dashboard';
+    router.push(redirect);
+  } catch (error) {
+    errorMessage.value = error?.message || 'Não foi possível fazer login.';
+  } finally {
     loading.value = false;
-    
-    // 3. Redireciona para o Dashboard (que agora está protegido e vai deixar passar)
-    router.push({ name: 'Dashboard' });
-  }, 1000);
-};
+  }
+}
 </script>
 
 <template>
-  <div class="login-container">
-    <h1>Entrar na Plataforma</h1>
+  <section class="surface-card auth-card fade-in-up">
+    <span class="badge badge-primary">Acesso BrainLog</span>
+    <h1>Entrar na plataforma</h1>
+    <p>Acesse sua conta para visualizar seus resumos e evolução de estudos.</p>
+
     <form @submit.prevent="handleLogin">
-      <input v-model="email" type="email" placeholder="Seu e-mail acadêmico" required />
-      <input v-model="password" type="password" placeholder="Sua senha" required />
-      
-      <button type="submit" :disabled="loading">
-        {{ loading ? 'Autenticando...' : 'Entrar' }}
+      <div class="field">
+        <label for="email">E-mail</label>
+        <input id="email" v-model.trim="form.email" type="email" placeholder="Digite seu e-mail" />
+      </div>
+
+      <div class="field">
+        <label for="password">Senha</label>
+        <input
+          id="password"
+          v-model="form.password"
+          :type="showPassword ? 'text' : 'password'"
+          placeholder="Digite sua senha"
+        />
+      </div>
+
+      <label class="show-password">
+        <input v-model="showPassword" type="checkbox" />
+        Mostrar senha
+      </label>
+
+      <p v-if="errorMessage" class="field-error">{{ errorMessage }}</p>
+
+      <button type="submit" class="btn btn-primary" :disabled="loading">
+        {{ loading ? 'Entrando...' : 'Entrar' }}
       </button>
     </form>
-    
-    <p v-if="authStore.isAuthenticated">
-      Status: Você já está logado como {{ authStore.userName }}
+
+    <p class="auth-footer">
+      Ainda não tem conta?
+      <RouterLink to="/register">Criar conta</RouterLink>
     </p>
-  </div>
+  </section>
 </template>
 
 <style scoped>
-.login-container { max-width: 400px; margin: 50px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
-input { display: block; width: 100%; margin-bottom: 10px; padding: 10px; }
-button { width: 100%; padding: 10px; background: #42b883; color: white; border: none; cursor: pointer; }
+.auth-card {
+  max-width: 470px;
+  margin: 0 auto;
+  padding: 1.2rem;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.auth-card h1 {
+  font-size: 1.55rem;
+}
+
+.auth-card p {
+  color: var(--bl-muted);
+  line-height: 1.55;
+}
+
+form {
+  display: grid;
+  gap: 0.72rem;
+}
+
+.show-password {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  color: var(--bl-muted);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.show-password input {
+  accent-color: var(--bl-primary);
+}
+
+form .btn {
+  width: 100%;
+}
+
+.auth-footer {
+  font-size: 0.9rem;
+}
+
+.auth-footer a {
+  color: var(--bl-primary);
+  font-weight: 800;
+}
 </style>
+

@@ -1,30 +1,48 @@
+import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
-
+import { loginRequest, registerRequest } from '@/services/authService';
+import {
+  clearSessionStorage,
+  getStoredToken,
+  getStoredUser,
+  saveSession,
+} from '@/services/storage.service';
 
 export const useAuthStore = defineStore('auth', () => {
-  // --- STATE (Dados) ---
-  const user = ref(null);
-  const token = ref(localStorage.getItem('token') || null);
+  const token = ref(getStoredToken() || null);
+  const user = ref(getStoredUser());
 
-  // --- GETTERS (Dados computados) ---
-  const isAuthenticated = computed(() => !!token.value);
+  const isAuthenticated = computed(() => Boolean(token.value));
   const userName = computed(() => user.value?.name || 'Estudante');
 
-  // --- ACTIONS (Funções de lógica) ---
-  function setToken(newToken) {
-    token.value = newToken;
-    localStorage.setItem('token', newToken);
+  function hydrate() {
+    token.value = getStoredToken() || null;
+    user.value = getStoredUser();
   }
 
-  function setUser(userData) {
+  function setSession(userData) {
+    const newToken = `brainlog-token-${userData.id}-${Date.now()}`;
+    token.value = newToken;
     user.value = userData;
+    saveSession(newToken, userData);
+  }
+
+  async function login(credentials) {
+    const loggedUser = await loginRequest(credentials);
+    setSession(loggedUser);
+    return loggedUser;
+  }
+
+  async function register(payload) {
+    const newUser = await registerRequest(payload);
+    setSession(newUser);
+    return newUser;
   }
 
   function logout() {
-    user.value = null;
     token.value = null;
-    localStorage.removeItem('token');
+    user.value = null;
+    clearSessionStorage();
   }
 
   return {
@@ -32,8 +50,9 @@ export const useAuthStore = defineStore('auth', () => {
     token,
     isAuthenticated,
     userName,
-    setToken,
-    setUser,
-    logout
+    hydrate,
+    login,
+    register,
+    logout,
   };
 });

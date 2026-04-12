@@ -1,0 +1,49 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "Aluno Teste",
+      "email": "teste@brainlog.com",
+      "password": "123456",
+      "goal": "Vestibular ENEM"
+    }
+  ],
+  "summaries": [
+    {
+      "id": 1,
+      "ownerId": 1,
+      "title": "Funções de 1º grau",
+      "subject": "Matemática",
+      "description": "Resumo com fórmulas básicas e exemplos recorrentes no ENEM.",
+      "status": "Revisado",
+      "createdAt": "2026-04-08T14:00:00.000Z",
+      "fileNames": [
+        "funcoes-enem.pdf"
+      ]
+    },
+    {
+      "id": 2,
+      "ownerId": 1,
+      "title": "Revolução Francesa",
+      "subject": "História",
+      "description": "Linha do tempo com causas, fases e consequências para vestibulares.",
+      "status": "Em revisão",
+      "createdAt": "2026-04-10T09:30:00.000Z",
+      "fileNames": [
+        "revolucao-francesa.pdf"
+      ]
+    },
+    {
+      "id": 3,
+      "ownerId": 1,
+      "title": "Química orgânica: funções",
+      "subject": "Química",
+      "description": "Mapa mental com principais funções orgânicas e nomenclatura.",
+      "status": "Novo",
+      "createdAt": "2026-04-11T19:15:00.000Z",
+      "fileNames": [
+        "quimica-organica.png"
+      ]
+    }
+  ]
+}
