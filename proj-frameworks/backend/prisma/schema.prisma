@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SummaryStatus {
+  NOVO
+  EM_REVISAO
+  REVISADO
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  name         String
+  email        String    @unique
+  passwordHash String
+  goal         String    @default("Vestibular")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  summaries    Summary[]
+}
+
+model Summary {
+  id          Int           @id @default(autoincrement())
+  ownerId     Int
+  title       String
+  subject     String
+  description String?
+  status      SummaryStatus @default(NOVO)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  files       SummaryFile[]
+  owner       User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
+  @@index([subject])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model SummaryFile {
+  id         Int      @id @default(autoincrement())
+  summaryId  Int
+  fileName   String
+  storedName String?
+  mimeType   String?
+  size       Int?
+  createdAt  DateTime @default(now())
+  summary    Summary  @relation(fields: [summaryId], references: [id], onDelete: Cascade)
+
+  @@index([summaryId])
+}

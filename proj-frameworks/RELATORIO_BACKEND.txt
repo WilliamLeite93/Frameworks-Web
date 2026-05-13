@@ -1,0 +1,545 @@
+RELATORIO DE CRIACAO DO BACKEND - BRAINLOG
+
+Data: 06/05/2026
+Projeto: proj-frameworks
+
+1. OBJETIVO
+
+Foi criado um backend real para o projeto BrainLog, substituindo o uso anterior do json-server por uma API em Node.js com TypeScript, Express, Prisma e PostgreSQL.
+
+O backend suporta autenticacao real com JWT, cadastro de usuarios, login, logout, protecao de rotas privadas, cadastro/listagem/filtro de resumos, metricas de dashboard/evolucao e modulo de upload de arquivos.
+
+Na etapa final, o projeto foi reorganizado para uma estrutura mais adequada de monorepo:
+
+- frontend/: aplicacao Vue/Vite
+- backend/: API Node/Express/Prisma
+- docker-compose.yml: orquestracao de PostgreSQL, API e frontend
+- package.json raiz: scripts de workspace para rodar frontend e backend
+
+
+2. TECNOLOGIAS ADICIONADAS
+
+- Node.js
+- TypeScript
+- Express
+- PostgreSQL
+- Prisma ORM
+- JWT para autenticacao
+- bcryptjs para criptografia de senhas
+- Zod para validacao de dados
+- Multer para upload de arquivos
+- CORS
+- dotenv
+- Docker Compose para subir PostgreSQL localmente
+
+
+3. ARQUIVOS CRIADOS
+
+3.1. backend/src/index.ts
+
+Arquivo principal da API.
+
+Responsabilidades:
+- Inicializacao do servidor Express.
+- Configuracao de CORS.
+- Leitura de variaveis de ambiente.
+- Inicializacao do Prisma Client.
+- Middleware de autenticacao JWT.
+- Rotas de usuarios.
+- Rotas de autenticacao.
+- Rotas de resumos.
+- Rotas de upload.
+- Rotas de dashboard/evolucao.
+- Tratamento centralizado de erros.
+
+
+3.2. backend/prisma/schema.prisma
+
+Schema do Prisma para PostgreSQL.
+
+Modelos criados:
+
+- User
+  - id
+  - name
+  - email unico
+  - passwordHash
+  - goal
+  - createdAt
+  - updatedAt
+  - summaries
+
+- Summary
+  - id
+  - ownerId
+  - title
+  - subject
+  - description
+  - status
+  - createdAt
+  - updatedAt
+  - files
+  - owner
+
+- SummaryFile
+  - id
+  - summaryId
+  - fileName
+  - storedName
+  - mimeType
+  - size
+  - createdAt
+  - summary
+
+Enum criado:
+
+- SummaryStatus
+  - NOVO
+  - EM_REVISAO
+  - REVISADO
+
+
+3.2.1. backend/prisma/migrations/20260506230000_init/migration.sql
+
+Migration inicial criada para permitir que o container da API execute prisma migrate deploy.
+
+Ela cria:
+- enum SummaryStatus
+- tabela User
+- tabela Summary
+- tabela SummaryFile
+- indices
+- relacionamentos com cascade delete
+
+
+3.3. backend/tsconfig.json
+
+Configuracao do TypeScript para compilar o backend.
+
+Saida configurada:
+- Entrada: backend/src
+- Build: backend/dist
+
+
+3.4. backend/.env.example
+
+Arquivo de exemplo para configuracao do ambiente.
+
+Variaveis adicionadas:
+
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/brainlog?schema=public"
+JWT_SECRET="troque-este-segredo-em-producao"
+PORT=3001
+UPLOAD_DIR="uploads"
+
+
+3.5. docker-compose.yml
+
+Arquivo para subir o banco PostgreSQL local, a API e o frontend via Docker.
+
+Servicos criados:
+- postgres
+- api
+- frontend
+
+Configuracoes do Postgres:
+- Banco: brainlog
+- Usuario: postgres
+- Senha: postgres
+- Porta: 5432
+- Volume persistente: brainlog_postgres_data
+- Healthcheck com pg_isready
+
+Configuracoes da API:
+- Build usando backend/Dockerfile
+- Porta: 3001
+- DATABASE_URL apontando para o servico postgres
+- JWT_SECRET configurado no Compose
+- UPLOAD_DIR configurado como uploads
+- Volume persistente para uploads: brainlog_uploads
+- Dependencia do Postgres com condition service_healthy
+
+Configuracoes do frontend:
+- Build usando frontend/Dockerfile
+- Servido por Nginx
+- Porta externa: 5173
+- Porta interna: 80
+- VITE_API_URL apontando para http://localhost:3001
+- Fallback de SPA configurado em frontend/nginx.conf
+
+
+3.7. backend/Dockerfile
+
+Arquivo usado para construir a imagem Docker da API.
+
+Etapas:
+- Usa Node 22 Alpine.
+- Instala dependencias com npm ci.
+- Copia o codigo do backend.
+- Gera Prisma Client.
+- Compila o backend TypeScript.
+- Expõe a porta 3001.
+- Executa migrations com prisma migrate deploy antes de iniciar a API.
+
+
+3.8. frontend/Dockerfile
+
+Arquivo usado para construir e servir o frontend Vue no Docker.
+
+Etapas:
+- Usa Node 22 Alpine para gerar o build Vite.
+- Injeta VITE_API_URL durante o build.
+- Usa Nginx Alpine para servir os arquivos estaticos.
+- Expoe a porta 80 internamente, publicada como 5173 no docker-compose.yml.
+
+
+3.9. frontend/nginx.conf
+
+Configuracao do Nginx para servir a SPA Vue.
+
+Inclui fallback:
+- try_files $uri $uri/ /index.html
+
+Isso permite abrir rotas como /login, /dashboard e /abstracts diretamente pelo navegador.
+
+
+3.10. .dockerignore
+
+Arquivo criado para evitar copiar arquivos desnecessarios para a imagem Docker.
+
+Ignora:
+- node_modules
+- dist
+- backend/dist
+- uploads
+- .env
+- .git
+- logs
+- documentacao local
+
+
+3.6. RELATORIO_BACKEND.txt
+
+Este arquivo de relatorio.
+
+
+4. ARQUIVOS ALTERADOS
+
+4.1. package.json
+
+Foram adicionados scripts para backend, Prisma e execucao integrada:
+
+- npm run server
+- npm run server:build
+- npm run server:start
+- npm run prisma:generate
+- npm run prisma:migrate
+- npm run dev:all
+
+Tambem foram adicionadas dependencias do backend:
+
+- @prisma/client
+- bcryptjs
+- cors
+- dotenv
+- express
+- jsonwebtoken
+- multer
+- zod
+
+E dependencias de desenvolvimento:
+
+- @types/cors
+- @types/express
+- @types/jsonwebtoken
+- @types/multer
+- @types/node
+- prisma
+- tsx
+- typescript
+
+A dependencia antiga json-server foi removida.
+
+
+4.2. package-lock.json
+
+Atualizado automaticamente apos instalacao, atualizacao e remocao de dependencias.
+
+
+4.3. frontend/src/services/authService.js
+
+Foi alterado para usar autenticacao real no backend.
+
+Antes:
+- Login consultava GET /users e comparava senha no frontend.
+- Cadastro criava usuario diretamente no json-server.
+
+Agora:
+- Login usa POST /auth/login.
+- Cadastro usa POST /users.
+- O backend retorna user e token JWT.
+- A senha nao e mais exposta para o frontend.
+
+
+4.4. frontend/src/store/auth.js
+
+Foi alterado para armazenar o token JWT real retornado pela API.
+
+Antes:
+- O frontend criava um token falso no formato brainlog-token-id-data.
+
+Agora:
+- O token vem do backend.
+- A sessao continua persistida no localStorage.
+- O fluxo de login/cadastro continua integrado com Pinia.
+
+
+4.5. README.md
+
+Atualizado com:
+- Nova stack do backend.
+- Instrucoes de configuracao do .env.
+- Comando para subir PostgreSQL via Docker.
+- Comandos do Prisma.
+- Endpoints principais da API.
+- Nova estrutura do projeto.
+- Remocao da referencia principal ao json-server.
+
+
+5. ENDPOINTS CRIADOS
+
+5.1. Health check
+
+GET /health
+
+Retorna status basico da API.
+
+
+5.2. Usuarios
+
+POST /users
+
+Cria um usuario novo.
+Valida e-mail unico.
+Criptografa senha com bcrypt.
+Retorna usuario publico e token JWT.
+
+Campos esperados:
+- name
+- email
+- password
+- goal
+
+
+GET /users?email=...
+
+Consulta usuarios, com suporte a filtro por e-mail.
+Nao retorna senha nem passwordHash.
+
+
+5.3. Autenticacao
+
+POST /auth/login
+
+Autentica usuario por e-mail e senha.
+Retorna usuario publico e token JWT.
+
+
+POST /auth/logout
+
+Rota protegida.
+Retorna 204.
+O logout efetivo continua sendo feito no frontend removendo token e usuario do localStorage.
+
+
+GET /auth/me
+
+Rota protegida.
+Retorna o usuario autenticado a partir do token JWT.
+
+
+5.4. Resumos
+
+GET /summaries?ownerId=...
+
+Rota protegida.
+Lista os resumos do usuario autenticado.
+Valida que o ownerId pertence ao usuario do token.
+
+Filtros opcionais:
+- subject
+- status
+- search
+
+
+POST /summaries
+
+Rota protegida.
+Cria um novo resumo.
+
+Campos suportados:
+- ownerId
+- title
+- subject
+- description
+- status
+- createdAt
+- fileNames
+
+
+PATCH /summaries/:id/status
+
+Rota protegida.
+Atualiza o status de um resumo.
+
+Status suportados:
+- Novo
+- Em revisao
+- Em revisão
+- Revisado
+
+
+POST /summaries/:id/files
+
+Rota protegida.
+Faz upload real de anexos usando multipart/form-data.
+Os arquivos sao salvos no diretorio configurado em UPLOAD_DIR.
+Metadados sao salvos na tabela SummaryFile.
+
+
+5.5. Dashboard e evolucao
+
+GET /dashboard/:ownerId
+
+Rota protegida.
+Retorna metricas agregadas do usuario autenticado.
+
+Metricas retornadas:
+- total de resumos
+- quantidade revisada
+- taxa de revisao
+- novos nos ultimos 7 dias
+- agrupamento por status
+- agrupamento por materia
+- evolucao mensal dos ultimos 6 meses
+
+
+6. SEGURANCA IMPLEMENTADA
+
+- Senhas armazenadas com bcrypt, nao em texto puro.
+- JWT com expiracao de 7 dias.
+- Middleware de protecao para rotas privadas.
+- Validacao de dono do recurso por ownerId.
+- Rotas privadas retornam 401 quando nao ha token.
+- Rotas privadas retornam 403 quando o usuario tenta acessar dados de outro usuario.
+- Validacao de payloads com Zod.
+- E-mail unico no banco via constraint do Prisma.
+
+
+7. COMPATIBILIDADE COM O FRONTEND
+
+O frontend foi mantido compativel com a estrutura existente:
+
+- api.js continua enviando Authorization: Bearer token.
+- authService.js passou a usar login real.
+- store/auth.js continua persistindo sessao no localStorage.
+- summaryService.js continua usando GET /summaries e POST /summaries.
+- As telas existentes continuam funcionando com os endpoints novos.
+
+
+8. COMANDOS IMPORTANTES
+
+Instalar dependencias:
+
+npm install
+
+Subir PostgreSQL local:
+
+docker compose up -d postgres
+
+Subir PostgreSQL e API no Docker:
+
+docker compose up -d
+
+Gerar Prisma Client:
+
+npm run prisma:generate
+
+Criar/aplicar migrations:
+
+npm run prisma:migrate
+
+Rodar backend:
+
+npm run server
+
+Rodar frontend:
+
+npm run dev
+
+Rodar frontend e backend juntos:
+
+npm run dev:all
+
+Compilar backend:
+
+npm run server:build
+
+Compilar frontend:
+
+npm run build
+
+
+9. VALIDACOES REALIZADAS
+
+Foram executadas as seguintes validacoes:
+
+- npm install
+- npm install multer@^2.0.0
+- npm audit fix
+- npm run prisma:generate
+- npm run server:build
+- npm run build
+- npm audit --omit=dev
+- GET http://localhost:3001/health
+
+Resultados:
+
+- Backend TypeScript compilando com sucesso.
+- Frontend Vite compilando com sucesso.
+- Prisma Client gerado com sucesso.
+- Auditoria de dependencias de producao sem vulnerabilidades conhecidas.
+- API respondendo em http://localhost:3001/health.
+- Frontend disponivel em http://localhost:5173.
+
+
+10. OBSERVACOES
+
+- O arquivo db.json permanece no projeto apenas como referencia antiga dos dados usados pelo json-server.
+- O backend real agora depende de um PostgreSQL configurado.
+- E necessario criar um arquivo backend/.env local baseado no backend/.env.example.
+- O json-server foi removido das dependencias.
+- O modulo de upload salva arquivos no diretorio configurado por UPLOAD_DIR.
+- Para producao, o valor de JWT_SECRET deve ser trocado por um segredo forte.
+
+
+11. RESUMO FINAL
+
+Foi entregue um backend completo, com arquitetura simples e funcional, pronto para evoluir junto com o frontend existente.
+
+Principais entregas:
+
+- API Node.js + Express + TypeScript.
+- Banco PostgreSQL via Prisma.
+- Autenticacao real com JWT.
+- Senhas criptografadas.
+- Rotas privadas protegidas.
+- CRUD inicial de usuarios e resumos.
+- Filtros de biblioteca.
+- Status de resumo.
+- Dashboard/evolucao com agregacoes.
+- Upload de anexos.
+- Docker Compose para banco local.
+- README atualizado.
+- Frontend integrado ao token real.
+
