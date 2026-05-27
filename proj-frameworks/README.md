@@ -74,7 +74,7 @@ docker compose up -d --build
 
 5. Acesse:
 
-- Frontend: `http://localhost:5173`
+- Frontend: `http://localhost:3031`
 - API: `http://localhost:3030`
 - Health check da API: `http://localhost:3030/health`
 
@@ -99,7 +99,7 @@ Para subir PostgreSQL, API e frontend:
 docker compose up -d --build
 ```
 
-Frontend: `http://localhost:5173`
+Frontend: `http://localhost:3031`
 API: `http://localhost:3030`
 PostgreSQL: `localhost:5432`
 
@@ -133,7 +133,7 @@ npm run server
 npm run dev
 ```
 
-Frontend: `http://localhost:5173`
+Frontend: `http://localhost:3031`
 API Node/Prisma: `http://localhost:3030`
 
 ## Endpoints principais

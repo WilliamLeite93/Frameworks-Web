@@ -162,7 +162,7 @@ Configuracoes da API:
 Configuracoes do frontend:
 - Build usando frontend/Dockerfile
 - Servido por Nginx
-- Porta externa: 5173
+- Porta externa: 3031
 - Porta interna: 80
 - VITE_API_URL apontando para http://localhost:3030
 - Fallback de SPA configurado em frontend/nginx.conf
@@ -190,7 +190,7 @@ Etapas:
 - Usa Node 22 Alpine para gerar o build Vite.
 - Injeta VITE_API_URL durante o build.
 - Usa Nginx Alpine para servir os arquivos estaticos.
-- Expoe a porta 80 internamente, publicada como 5173 no docker-compose.yml.
+- Expoe a porta 8080 internamente, publicada como 3031 no docker-compose.yml.
 
 
 3.9. frontend/nginx.conf
@@ -510,7 +510,7 @@ Resultados:
 - Prisma Client gerado com sucesso.
 - Auditoria de dependencias de producao sem vulnerabilidades conhecidas.
 - API respondendo em http://localhost:3030/health.
-- Frontend disponivel em http://localhost:5173.
+- Frontend disponivel em http://localhost:3031.
 
 
 10. OBSERVACOES
