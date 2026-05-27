@@ -129,7 +129,7 @@ Variaveis adicionadas:
 
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/brainlog?schema=public"
 JWT_SECRET="troque-este-segredo-em-producao"
-PORT=3001
+PORT=3030
 UPLOAD_DIR="uploads"
 
 
@@ -152,7 +152,7 @@ Configuracoes do Postgres:
 
 Configuracoes da API:
 - Build usando backend/Dockerfile
-- Porta: 3001
+- Porta: 3030
 - DATABASE_URL apontando para o servico postgres
 - JWT_SECRET configurado no Compose
 - UPLOAD_DIR configurado como uploads
@@ -164,7 +164,7 @@ Configuracoes do frontend:
 - Servido por Nginx
 - Porta externa: 5173
 - Porta interna: 80
-- VITE_API_URL apontando para http://localhost:3001
+- VITE_API_URL apontando para http://localhost:3030
 - Fallback de SPA configurado em frontend/nginx.conf
 
 
@@ -178,7 +178,7 @@ Etapas:
 - Copia o codigo do backend.
 - Gera Prisma Client.
 - Compila o backend TypeScript.
-- Expõe a porta 3001.
+- Expõe a porta 3030.
 - Executa migrations com prisma migrate deploy antes de iniciar a API.
 
 
@@ -501,7 +501,7 @@ Foram executadas as seguintes validacoes:
 - npm run server:build
 - npm run build
 - npm audit --omit=dev
-- GET http://localhost:3001/health
+- GET http://localhost:3030/health
 
 Resultados:
 
@@ -509,7 +509,7 @@ Resultados:
 - Frontend Vite compilando com sucesso.
 - Prisma Client gerado com sucesso.
 - Auditoria de dependencias de producao sem vulnerabilidades conhecidas.
-- API respondendo em http://localhost:3001/health.
+- API respondendo em http://localhost:3030/health.
 - Frontend disponivel em http://localhost:5173.
 
 

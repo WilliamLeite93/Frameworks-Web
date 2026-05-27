@@ -1,4 +1,4 @@
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 3030;
 
 fetch(`http://127.0.0.1:${port}/health`)
   .then((response) => {

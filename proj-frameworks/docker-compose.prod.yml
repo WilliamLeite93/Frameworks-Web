@@ -28,10 +28,10 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL:?DATABASE_URL nao definida}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET nao definido}
-      PORT: ${BACKEND_PORT:-3001}
+      PORT: ${BACKEND_PORT:-3030}
       UPLOAD_DIR: ${UPLOAD_DIR:-uploads}
     ports:
-      - "${BACKEND_PORT:-3001}:${BACKEND_PORT:-3001}"
+      - "${BACKEND_PORT:-3030}:${BACKEND_PORT:-3030}"
     volumes:
       - brainlog_uploads:/app/uploads
     depends_on:

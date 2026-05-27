@@ -22,7 +22,7 @@ FROM node:22-alpine AS production
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV PORT=3001
+ENV PORT=3030
 ENV UPLOAD_DIR=uploads
 
 RUN apk add --no-cache openssl
@@ -37,7 +37,7 @@ RUN mkdir -p uploads && chown -R node:node /app
 
 USER node
 
-EXPOSE 3001
+EXPOSE 3030
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD ["node", "scripts/healthcheck.js"]

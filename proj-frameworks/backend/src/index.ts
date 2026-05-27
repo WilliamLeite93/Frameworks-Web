@@ -13,7 +13,7 @@ dotenv.config();
 
 const prisma = new PrismaClient();
 const app = express();
-const port = Number(process.env.PORT || 3001);
+const port = Number(process.env.PORT || 3030);
 const jwtSecret = process.env.JWT_SECRET || 'dev-secret-change-me';
 const uploadDir = process.env.UPLOAD_DIR || 'uploads';
 const __filename = fileURLToPath(import.meta.url);

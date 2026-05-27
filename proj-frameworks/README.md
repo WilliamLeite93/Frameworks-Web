@@ -75,8 +75,8 @@ docker compose up -d --build
 5. Acesse:
 
 - Frontend: `http://localhost:5173`
-- API: `http://localhost:3001`
-- Health check da API: `http://localhost:3001/health`
+- API: `http://localhost:3030`
+- Health check da API: `http://localhost:3030/health`
 
 Observacao: o container da API executa as migrations automaticamente com `prisma migrate deploy`.
 
@@ -87,7 +87,7 @@ Crie um arquivo `backend/.env` a partir de `backend/.env.example`:
 ```bash
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/brainlog?schema=public"
 JWT_SECRET="troque-este-segredo-em-producao"
-PORT=3001
+PORT=3030
 UPLOAD_DIR="uploads"
 ```
 
@@ -100,7 +100,7 @@ docker compose up -d --build
 ```
 
 Frontend: `http://localhost:5173`
-API: `http://localhost:3001`
+API: `http://localhost:3030`
 PostgreSQL: `localhost:5432`
 
 O container da API executa `prisma migrate deploy` antes de iniciar.
@@ -134,7 +134,7 @@ npm run dev
 ```
 
 Frontend: `http://localhost:5173`
-API Node/Prisma: `http://localhost:3001`
+API Node/Prisma: `http://localhost:3030`
 
 ## Endpoints principais
 
