@@ -2,7 +2,7 @@
 import { reactive, ref } from 'vue';
 import { useAuthStore } from '@/store/auth';
 import { useFiles } from '@/hooks/useFiles';
-import { createSummary } from '@/services/summaryService';
+import { createSummary, uploadSummaryFiles } from '@/services/summaryService';
 
 const authStore = useAuthStore();
 const { files, addFiles, removeFile, clearFiles } = useFiles();
@@ -31,13 +31,15 @@ async function handleSubmit() {
   feedback.value = '';
 
   try {
-    await createSummary({
+    const summary = await createSummary({
       ownerId: authStore.user.id,
       title: form.title,
       subject: form.subject,
       description: form.description,
-      fileNames: files.value.map((file) => file.name),
+      fileNames: [],
     });
+
+    await uploadSummaryFiles(summary.id, files.value);
 
     form.title = '';
     form.subject = 'Matemática';

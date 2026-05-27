@@ -19,7 +19,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-ARG VITE_API_URL=http://localhost:3001
+ARG VITE_API_URL=/api
 ENV VITE_API_URL=$VITE_API_URL
 
 COPY index.html vite.config.js jsconfig.json ./
@@ -32,13 +32,12 @@ FROM nginxinc/nginx-unprivileged:1.27-alpine
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /usr/share/nginx/html
-COPY scripts/healthcheck.sh /usr/local/bin/healthcheck.sh
 
 EXPOSE 8080
 
 USER root
-RUN chmod +x /usr/local/bin/healthcheck.sh && chown -R nginx:nginx /usr/share/nginx/html
+RUN chown -R nginx:nginx /usr/share/nginx/html
 USER nginx
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD ["healthcheck.sh"]
+  CMD ["wget", "-qO-", "http://127.0.0.1:8080/"]

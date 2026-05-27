@@ -24,3 +24,20 @@ export async function createSummary(payload) {
   const { data } = await api.post('/summaries', body);
   return data;
 }
+
+export async function uploadSummaryFiles(summaryId, files) {
+  if (!files?.length) return [];
+
+  const formData = new FormData();
+  files.forEach((file) => {
+    formData.append('files', file.raw);
+  });
+
+  const { data } = await api.post(`/summaries/${summaryId}/files`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+
+  return data;
+}
