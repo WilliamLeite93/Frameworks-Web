@@ -28,10 +28,10 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL:?DATABASE_URL nao definida}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET nao definido}
-      PORT: ${BACKEND_PORT:-3030}
+      PORT: 3030
       UPLOAD_DIR: ${UPLOAD_DIR:-uploads}
     ports:
-      - "${BACKEND_PORT:-3030}:${BACKEND_PORT:-3030}"
+      - "${BACKEND_PORT:-3030}:3030"
     volumes:
       - brainlog_uploads:/app/uploads
     depends_on:
@@ -43,7 +43,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: ${VITE_API_URL:?VITE_API_URL nao definida}
+        VITE_API_URL: /api
     image: brainlog-frontend:${APP_VERSION:-latest}
     container_name: brainlog-frontend
     restart: unless-stopped
