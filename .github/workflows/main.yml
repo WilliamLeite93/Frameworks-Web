@@ -26,4 +26,4 @@ jobs:
             echo "🧹 Limpando imagens antigas..."
             docker image prune -f
             echo "✅ Deploy concluído!"
-            docker compose ps
+            docker compose -f proj-frameworks/docker-compose.prod.yml ps
