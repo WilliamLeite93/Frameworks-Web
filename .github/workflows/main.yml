@@ -20,7 +20,7 @@ jobs:
           script: |
             cd ~/Frameworks-Web
             echo "📥 Atualizando código..."
-            git pull origin main
+            git pull --rebase origin main
             echo "🐳 Reconstruindo containers..."
             docker compose -f proj-frameworks/docker-compose.prod.yml up -d --build
             echo "🧹 Limpando imagens antigas..."
