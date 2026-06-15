@@ -1,5 +1,30 @@
 import api from '@/services/api';
 
+function resolveApiAssetUrl(path) {
+  if (!path) return '';
+  if (/^https?:\/\//i.test(path)) return path;
+
+  const apiBaseUrl = import.meta.env.VITE_API_URL || '/api';
+  const normalizedBase = apiBaseUrl.endsWith('/') ? apiBaseUrl.slice(0, -1) : apiBaseUrl;
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+
+  return `${normalizedBase}${normalizedPath}`;
+}
+
+function normalizeSummary(summary) {
+  const files = Array.isArray(summary.files)
+    ? summary.files.map((file) => ({
+        ...file,
+        url: resolveApiAssetUrl(file.url),
+      }))
+    : [];
+
+  return {
+    ...summary,
+    files,
+  };
+}
+
 export async function getSummariesByOwner(ownerId) {
   const { data } = await api.get('/summaries', {
     params: {
@@ -7,7 +32,7 @@ export async function getSummariesByOwner(ownerId) {
     },
   });
 
-  return data;
+  return data.map(normalizeSummary);
 }
 
 export async function createSummary(payload) {
@@ -22,7 +47,7 @@ export async function createSummary(payload) {
   };
 
   const { data } = await api.post('/summaries', body);
-  return data;
+  return normalizeSummary(data);
 }
 
 export async function uploadSummaryFiles(summaryId, files) {

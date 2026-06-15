@@ -89,7 +89,18 @@ DATABASE_URL="postgresql://postgres:postgres@localhost:5432/brainlog?schema=publ
 JWT_SECRET="troque-este-segredo-em-producao"
 PORT=3030
 UPLOAD_DIR="uploads"
+APP_BASE_URL="http://localhost:3031"
+PASSWORD_RESET_TOKEN_MINUTES=30
+MAILTRAP_API_KEY=""
+MAILTRAP_USE_SANDBOX=true
+MAILTRAP_INBOX_ID=""
+MAILTRAP_FROM_EMAIL="sandbox@example.com"
+MAILTRAP_FROM_NAME="BrainLog"
 ```
+
+Para enviar e-mails de recuperação de senha com Mailtrap, preencha `MAILTRAP_API_KEY`.
+Em ambiente de teste, mantenha `MAILTRAP_USE_SANDBOX=true` e informe `MAILTRAP_INBOX_ID`.
+Em produção, use `MAILTRAP_USE_SANDBOX=false`, configure `APP_BASE_URL` com a URL pública do frontend e use um `MAILTRAP_FROM_EMAIL` de domínio verificado.
 
 ## Rodar com Docker
 

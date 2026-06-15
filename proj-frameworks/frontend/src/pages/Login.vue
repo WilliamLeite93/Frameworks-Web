@@ -74,6 +74,8 @@ async function handleLogin() {
         Mostrar senha
       </label>
 
+      <RouterLink class="forgot-link" to="/forgot-password">Esqueci minha senha</RouterLink>
+
       <p v-if="errorMessage" class="field-error">{{ errorMessage }}</p>
 
       <button type="submit" class="btn btn-primary" :disabled="loading">
@@ -122,6 +124,13 @@ form {
 
 .show-password input {
   accent-color: var(--bl-primary);
+}
+
+.forgot-link {
+  justify-self: start;
+  color: var(--bl-primary);
+  font-size: 0.84rem;
+  font-weight: 800;
 }
 
 form .btn {

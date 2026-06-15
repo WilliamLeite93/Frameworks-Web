@@ -6,6 +6,8 @@ const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/login', name: 'Login', component: () => import('@/pages/Login.vue') },
   { path: '/register', name: 'Register', component: () => import('@/pages/Register.vue') },
+  { path: '/forgot-password', name: 'ForgotPassword', component: () => import('@/pages/ForgotPassword.vue') },
+  { path: '/reset-password', name: 'ResetPassword', component: () => import('@/pages/ResetPassword.vue') },
   {
     path: '/dashboard',
     name: 'Dashboard',
@@ -51,7 +53,7 @@ router.beforeEach((to) => {
     };
   }
 
-  if ((to.name === 'Login' || to.name === 'Register') && authStore.isAuthenticated) {
+  if (['Login', 'Register', 'ForgotPassword', 'ResetPassword'].includes(to.name) && authStore.isAuthenticated) {
     return { name: 'Dashboard' };
   }
 
@@ -63,6 +65,8 @@ router.afterEach((to) => {
     Home: 'BrainLog | Plataforma de Resumos para Vestibular',
     Login: 'BrainLog | Login',
     Register: 'BrainLog | Cadastro',
+    ForgotPassword: 'BrainLog | Recuperar senha',
+    ResetPassword: 'BrainLog | Redefinir senha',
     Dashboard: 'BrainLog | Dashboard',
     Upload: 'BrainLog | Upload',
     Abstracts: 'BrainLog | Biblioteca de Resumos',
