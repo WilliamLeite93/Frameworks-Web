@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import { useAuthStore } from '@/store/auth';
+import bgHomeImage from '@/assets/bg-home.png';
 
 const authStore = useAuthStore();
 const userName = computed(() => authStore.userName || 'Gabriel');
@@ -54,7 +55,7 @@ const goalDays = [
 </script>
 
 <template>
-  <div class="home-dashboard fade-in-up">
+  <div class="home-dashboard fade-in-up" :style="{ '--home-bg-image': `url(${bgHomeImage})` }">
     <header class="home-topbar">
       <div>
         <h1>Bom dia, {{ userName }}!</h1>
@@ -236,8 +237,23 @@ const goalDays = [
 
 <style scoped>
 .home-dashboard {
+  min-height: calc(100vh - 4.4rem);
+  margin: -0.6rem;
+  border-radius: var(--radius-lg);
+  padding: 1rem;
   display: grid;
   gap: 1rem;
+  background:
+    linear-gradient(180deg, rgba(248, 250, 252, 0.88), rgba(248, 250, 252, 0.76)),
+    var(--home-bg-image) center / cover no-repeat;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.48);
+}
+
+:global(body.theme-dark) .home-dashboard {
+  background:
+    linear-gradient(180deg, rgba(2, 6, 23, 0.78), rgba(15, 23, 42, 0.86)),
+    var(--home-bg-image) center / cover no-repeat;
+  box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.12);
 }
 
 .home-topbar {
@@ -764,6 +780,21 @@ const goalDays = [
 }
 
 @media (max-width: 760px) {
+  .home-dashboard {
+    min-height: calc(100vh - 3rem);
+    margin: -0.3rem;
+    padding: 0.8rem;
+    background:
+      linear-gradient(180deg, rgba(248, 250, 252, 0.92), rgba(248, 250, 252, 0.82)),
+      var(--home-bg-image) center top / cover no-repeat;
+  }
+
+  :global(body.theme-dark) .home-dashboard {
+    background:
+      linear-gradient(180deg, rgba(2, 6, 23, 0.82), rgba(15, 23, 42, 0.9)),
+      var(--home-bg-image) center top / cover no-repeat;
+  }
+
   .home-topbar,
   .topbar-actions {
     align-items: stretch;
