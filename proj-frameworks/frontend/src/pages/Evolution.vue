@@ -119,13 +119,12 @@ onMounted(loadSummaries);
 
 <template>
   <div class="evolution-page fade-in-up">
-    <section class="evolution-hero">
+    <section class="evolution-hero" :style="{ '--hero-bg-image': `url(${componenteImage})` }">
       <div>
         <span class="badge badge-primary">Evolução de estudos</span>
         <h1>Acompanhe seu ritmo de aprendizado.</h1>
         <p>Visualize sua consistência semanal e ajuste seu planejamento para manter avanço contínuo.</p>
       </div>
-      <img class="hero-chart" :src="componenteImage" alt="" aria-hidden="true" />
     </section>
 
     <section class="evolution-stats">
@@ -299,6 +298,8 @@ onMounted(loadSummaries);
   justify-content: space-between;
   gap: 1rem;
   background:
+    linear-gradient(90deg, rgba(239, 252, 249, 0.98) 0%, rgba(239, 252, 249, 0.9) 44%, rgba(239, 252, 249, 0.2) 72%),
+    var(--hero-bg-image) right center / auto 100% no-repeat,
     radial-gradient(circle at 100% 0%, rgba(6, 182, 212, 0.1), transparent 34%),
     linear-gradient(145deg, #effcf9, #ffffff);
   box-shadow: var(--shadow-soft);
@@ -306,6 +307,8 @@ onMounted(loadSummaries);
 
 :global(body.theme-dark) .evolution-hero {
   background:
+    linear-gradient(90deg, rgba(15, 23, 42, 0.98) 0%, rgba(15, 23, 42, 0.9) 48%, rgba(15, 23, 42, 0.24) 76%),
+    var(--hero-bg-image) right center / auto 100% no-repeat,
     radial-gradient(circle at 100% 0%, rgba(45, 212, 191, 0.18), transparent 34%),
     linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.94));
 }
@@ -321,14 +324,6 @@ onMounted(loadSummaries);
   color: var(--bl-muted);
   line-height: 1.65;
   max-width: 58ch;
-}
-
-.hero-chart {
-  width: min(260px, 28vw);
-  max-height: 145px;
-  object-fit: contain;
-  object-position: center right;
-  display: block;
 }
 
 .evolution-stats {
@@ -714,10 +709,19 @@ onMounted(loadSummaries);
   .evolution-hero {
     align-items: stretch;
     flex-direction: column;
+    background:
+      linear-gradient(180deg, rgba(239, 252, 249, 0.98) 0%, rgba(239, 252, 249, 0.88) 58%, rgba(239, 252, 249, 0.24) 100%),
+      var(--hero-bg-image) right bottom / min(72%, 300px) auto no-repeat,
+      radial-gradient(circle at 100% 0%, rgba(6, 182, 212, 0.1), transparent 34%),
+      linear-gradient(145deg, #effcf9, #ffffff);
   }
 
-  .hero-chart {
-    width: min(260px, 78vw);
+  :global(body.theme-dark) .evolution-hero {
+    background:
+      linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(15, 23, 42, 0.9) 60%, rgba(15, 23, 42, 0.28) 100%),
+      var(--hero-bg-image) right bottom / min(72%, 300px) auto no-repeat,
+      radial-gradient(circle at 100% 0%, rgba(45, 212, 191, 0.18), transparent 34%),
+      linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.94));
   }
 
   .evolution-stats,
