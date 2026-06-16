@@ -2,6 +2,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { useAuthStore } from '@/store/auth';
 import { getSummariesByOwner } from '@/services/summaryService';
+import componenteImage from '@/assets/componente.png';
 
 const authStore = useAuthStore();
 const summaries = ref([]);
@@ -124,10 +125,7 @@ onMounted(loadSummaries);
         <h1>Acompanhe seu ritmo de aprendizado.</h1>
         <p>Visualize sua consistência semanal e ajuste seu planejamento para manter avanço contínuo.</p>
       </div>
-      <div class="hero-chart" aria-hidden="true">
-        <span v-for="height in [38, 54, 72, 92, 116, 142]" :key="height" :style="{ height: `${height}px` }" />
-        <strong>🏆</strong>
-      </div>
+      <img class="hero-chart" :src="componenteImage" alt="" aria-hidden="true" />
     </section>
 
     <section class="evolution-stats">
@@ -306,6 +304,12 @@ onMounted(loadSummaries);
   box-shadow: var(--shadow-soft);
 }
 
+:global(body.theme-dark) .evolution-hero {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(45, 212, 191, 0.18), transparent 34%),
+    linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.94));
+}
+
 .evolution-hero h1 {
   margin-top: 0.55rem;
   font-size: clamp(1.9rem, 3vw, 2.45rem);
@@ -321,26 +325,10 @@ onMounted(loadSummaries);
 
 .hero-chart {
   width: min(260px, 28vw);
-  min-height: 145px;
-  display: flex;
-  align-items: end;
-  justify-content: center;
-  gap: 0.55rem;
-  position: relative;
-}
-
-.hero-chart span {
-  width: 1.6rem;
-  border-radius: 8px 8px 0 0;
-  background: linear-gradient(180deg, #6ee7b7, #0f766e);
-  box-shadow: 0 18px 26px rgba(15, 118, 110, 0.18);
-}
-
-.hero-chart strong {
-  position: absolute;
-  top: 0;
-  right: 1.8rem;
-  font-size: 2.4rem;
+  max-height: 145px;
+  object-fit: contain;
+  object-position: center right;
+  display: block;
 }
 
 .evolution-stats {
@@ -447,6 +435,10 @@ onMounted(loadSummaries);
   text-transform: capitalize;
 }
 
+:global(body.theme-dark) .card-header button {
+  color: #cbd5e1;
+}
+
 .chart-card svg {
   width: 100%;
   height: 250px;
@@ -489,6 +481,12 @@ onMounted(loadSummaries);
   color: var(--bl-primary);
   font-size: 0.82rem;
   font-weight: 800;
+}
+
+:global(body.theme-dark) .insight-note,
+:global(body.theme-dark) .gold-tip {
+  border: 1px solid rgba(45, 212, 191, 0.24);
+  color: #5eead4;
 }
 
 .subject-content {
@@ -568,6 +566,10 @@ onMounted(loadSummaries);
   font-weight: 900;
 }
 
+:global(body.theme-dark) .outline-link {
+  color: #5eead4;
+}
+
 .heatmap {
   margin-top: 1rem;
   display: grid;
@@ -583,6 +585,10 @@ onMounted(loadSummaries);
 
 .level-0 {
   background: #f1f5f9;
+}
+
+:global(body.theme-dark) .level-0 {
+  background: #1e293b;
 }
 
 .level-1 {
@@ -648,6 +654,10 @@ onMounted(loadSummaries);
   color: var(--bl-primary);
   font-size: 0.76rem;
   font-weight: 800;
+}
+
+:global(body.theme-dark) .month-stats p {
+  color: #5eead4;
 }
 
 .bars {

@@ -290,6 +290,10 @@ const goalDays = [
   font-weight: 900;
 }
 
+:global(body.theme-dark) .streak-mark {
+  color: #fcd34d;
+}
+
 .streak-pill strong,
 .streak-pill small {
   display: block;
@@ -306,6 +310,10 @@ const goalDays = [
   border-radius: 14px;
   color: var(--bl-primary);
   font-weight: 900;
+}
+
+:global(body.theme-dark) .icon-button {
+  color: #5eead4;
 }
 
 .stats-grid {
@@ -383,6 +391,10 @@ const goalDays = [
   font-weight: 800;
 }
 
+:global(body.theme-dark) .stat-tile p {
+  color: #5eead4;
+}
+
 .mini-progress,
 .progress-line {
   display: block;
@@ -451,6 +463,16 @@ const goalDays = [
   background: var(--bl-surface);
 }
 
+:global(body.theme-dark) .card-header a,
+:global(body.theme-dark) .card-header button,
+:global(body.theme-dark) .text-link {
+  color: #5eead4;
+}
+
+:global(body.theme-dark) .filter-button {
+  color: #cbd5e1;
+}
+
 .chart-wrap {
   min-height: 250px;
 }
@@ -501,6 +523,11 @@ const goalDays = [
   font-weight: 800;
 }
 
+:global(body.theme-dark) .insight-note {
+  border-color: rgba(45, 212, 191, 0.24);
+  color: #5eead4;
+}
+
 .step-list,
 .subject-list,
 .activity-list {
@@ -526,6 +553,11 @@ const goalDays = [
 .step-row:hover {
   border-color: rgba(15, 118, 110, 0.35);
   background: rgba(204, 251, 241, 0.45);
+}
+
+:global(body.theme-dark) .step-row:hover {
+  border-color: rgba(94, 234, 212, 0.38);
+  background: rgba(20, 184, 166, 0.16);
 }
 
 .step-row strong,
@@ -694,6 +726,10 @@ const goalDays = [
   color: var(--bl-primary);
   font-style: normal;
   font-weight: 900;
+}
+
+:global(body.theme-dark) .goal-days i {
+  color: #5eead4;
 }
 
 .goal-days .done i {

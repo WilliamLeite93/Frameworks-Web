@@ -236,6 +236,12 @@ async function handleSubmit() {
   box-shadow: var(--shadow-soft);
 }
 
+:global(body.theme-dark) .upload-hero {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(45, 212, 191, 0.18), transparent 34%),
+    linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.94));
+}
+
 .upload-hero h1 {
   margin-top: 0.6rem;
   font-size: clamp(1.8rem, 3vw, 2.35rem);
@@ -351,14 +357,27 @@ form .btn {
   background: linear-gradient(135deg, rgba(204, 251, 241, 0.72), rgba(224, 242, 254, 0.54));
 }
 
+:global(body.theme-dark) .tips-box {
+  border: 1px solid rgba(45, 212, 191, 0.24);
+  background: linear-gradient(135deg, rgba(15, 118, 110, 0.24), rgba(14, 165, 233, 0.14));
+}
+
 .tips-box strong {
   color: var(--bl-primary);
   font-size: 0.86rem;
 }
 
+:global(body.theme-dark) .tips-box strong {
+  color: #5eead4;
+}
+
 .tips-box span {
   color: var(--bl-muted);
   font-size: 0.82rem;
+}
+
+:global(body.theme-dark) .tips-box span {
+  color: #cbd5e1;
 }
 
 .tips-box span::before {
@@ -415,11 +434,24 @@ form .btn {
   transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
 }
 
+:global(body.theme-dark) .drop-zone {
+  border-color: rgba(45, 212, 191, 0.42);
+  background:
+    radial-gradient(circle at 50% 8%, rgba(45, 212, 191, 0.18), transparent 34%),
+    rgba(15, 23, 42, 0.72);
+}
+
 .drop-zone.dragging,
 .drop-zone:hover {
   transform: translateY(-1px);
   border-color: var(--bl-primary);
   background: rgba(204, 251, 241, 0.72);
+}
+
+:global(body.theme-dark) .drop-zone.dragging,
+:global(body.theme-dark) .drop-zone:hover {
+  border-color: #5eead4;
+  background: rgba(20, 184, 166, 0.16);
 }
 
 .drop-zone input {
@@ -441,9 +473,18 @@ form .btn {
   font-size: 1rem;
 }
 
+:global(body.theme-dark) .drop-zone strong {
+  color: #f8fafc;
+}
+
 .drop-zone small,
 .drop-zone em {
   color: var(--bl-muted);
+}
+
+:global(body.theme-dark) .drop-zone small,
+:global(body.theme-dark) .drop-zone em {
+  color: #cbd5e1;
 }
 
 .drop-zone b {
@@ -451,6 +492,11 @@ form .btn {
   border-radius: 999px;
   padding: 0.54rem 1.1rem;
   color: var(--bl-primary);
+}
+
+:global(body.theme-dark) .drop-zone b {
+  border-color: rgba(94, 234, 212, 0.44);
+  color: #5eead4;
 }
 
 .drop-zone em {
@@ -524,6 +570,12 @@ form .btn {
   color: var(--bl-danger);
   border-color: #fecaca;
   background: #fef2f2;
+}
+
+:global(body.theme-dark) .file-list button:hover {
+  color: #fca5a5;
+  border-color: rgba(248, 113, 113, 0.42);
+  background: rgba(127, 29, 29, 0.24);
 }
 
 .empty-files {
