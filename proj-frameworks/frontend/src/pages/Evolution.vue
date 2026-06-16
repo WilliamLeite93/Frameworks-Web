@@ -299,7 +299,7 @@ onMounted(loadSummaries);
   gap: 1rem;
   background:
     linear-gradient(90deg, rgba(239, 252, 249, 0.98) 0%, rgba(239, 252, 249, 0.9) 44%, rgba(239, 252, 249, 0.2) 72%),
-    var(--hero-bg-image) right center / auto 100% no-repeat,
+    var(--hero-bg-image) center / cover no-repeat,
     radial-gradient(circle at 100% 0%, rgba(6, 182, 212, 0.1), transparent 34%),
     linear-gradient(145deg, #effcf9, #ffffff);
   box-shadow: var(--shadow-soft);
@@ -308,7 +308,7 @@ onMounted(loadSummaries);
 :global(body.theme-dark) .evolution-hero {
   background:
     linear-gradient(90deg, rgba(15, 23, 42, 0.98) 0%, rgba(15, 23, 42, 0.9) 48%, rgba(15, 23, 42, 0.24) 76%),
-    var(--hero-bg-image) right center / auto 100% no-repeat,
+    var(--hero-bg-image) center / cover no-repeat,
     radial-gradient(circle at 100% 0%, rgba(45, 212, 191, 0.18), transparent 34%),
     linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.94));
 }
@@ -711,7 +711,7 @@ onMounted(loadSummaries);
     flex-direction: column;
     background:
       linear-gradient(180deg, rgba(239, 252, 249, 0.98) 0%, rgba(239, 252, 249, 0.88) 58%, rgba(239, 252, 249, 0.24) 100%),
-      var(--hero-bg-image) right bottom / min(72%, 300px) auto no-repeat,
+      var(--hero-bg-image) center / cover no-repeat,
       radial-gradient(circle at 100% 0%, rgba(6, 182, 212, 0.1), transparent 34%),
       linear-gradient(145deg, #effcf9, #ffffff);
   }
@@ -719,7 +719,7 @@ onMounted(loadSummaries);
   :global(body.theme-dark) .evolution-hero {
     background:
       linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(15, 23, 42, 0.9) 60%, rgba(15, 23, 42, 0.28) 100%),
-      var(--hero-bg-image) right bottom / min(72%, 300px) auto no-repeat,
+      var(--hero-bg-image) center / cover no-repeat,
       radial-gradient(circle at 100% 0%, rgba(45, 212, 191, 0.18), transparent 34%),
       linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.94));
   }
