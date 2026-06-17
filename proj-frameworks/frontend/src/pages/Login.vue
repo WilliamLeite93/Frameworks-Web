@@ -51,14 +51,14 @@ async function handleLogin() {
 
 <template>
   <section class="login-page fade-in-up" :style="{ backgroundImage: `url(${bgLogin})` }">
-    <div class="login-copy">
+    <div class="login-copy" aria-labelledby="login-hero-title">
       <RouterLink to="/" class="login-brand" aria-label="BrainLog - página inicial">
         <img :src="brainLogLogo" alt="" class="brand-mark" aria-hidden="true" />
         <span>BrainLog</span>
       </RouterLink>
 
       <div class="login-heading">
-        <h1>
+        <h1 id="login-hero-title">
           Organize seus estudos.
           <span>Evolua com clareza.</span>
         </h1>
@@ -67,15 +67,32 @@ async function handleLogin() {
 
       <div class="benefit-grid" aria-label="Benefícios do BrainLog">
         <article class="benefit-card">
-          <span>RS</span>
+          <span aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M8 4.5h9.5v13H8z" />
+              <path d="M5.5 7H16v12.5H5.5z" />
+              <path d="M8.5 10.5h5M8.5 14h5" />
+            </svg>
+          </span>
           <strong>Organize seus resumos</strong>
         </article>
         <article class="benefit-card">
-          <span>EV</span>
+          <span aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="m4 16 5-5 3.2 3.2L20 6.5" />
+              <path d="M16 6.5h4v4" />
+            </svg>
+          </span>
           <strong>Acompanhe sua evolução</strong>
         </article>
         <article class="benefit-card">
-          <span>FO</span>
+          <span aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="7.5" />
+              <circle cx="12" cy="12" r="3.8" />
+              <path d="M12 12h7.5M12 4.5V2M4.5 12H2M12 19.5V22" />
+            </svg>
+          </span>
           <strong>Estude com foco</strong>
         </article>
       </div>
@@ -107,7 +124,12 @@ async function handleLogin() {
         <div class="login-field">
           <label for="email">E-mail</label>
           <div class="input-shell">
-            <span aria-hidden="true">@</span>
+            <span aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M4.5 6.5h15v11h-15z" />
+                <path d="m5 7 7 6 7-6" />
+              </svg>
+            </span>
             <input id="email" v-model.trim="form.email" type="email" placeholder="Digite seu e-mail" />
           </div>
         </div>
@@ -115,7 +137,12 @@ async function handleLogin() {
         <div class="login-field">
           <label for="password">Senha</label>
           <div class="input-shell">
-            <span aria-hidden="true">#</span>
+            <span aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M7 10h10v9H7z" />
+                <path d="M9.2 10V7.8a2.8 2.8 0 0 1 5.6 0V10" />
+              </svg>
+            </span>
             <input
               id="password"
               v-model="form.password"
@@ -123,7 +150,16 @@ async function handleLogin() {
               placeholder="Digite sua senha"
             />
             <button type="button" class="password-toggle" :aria-label="showPassword ? 'Ocultar senha' : 'Mostrar senha'" @click="showPassword = !showPassword">
-              {{ showPassword ? 'Ocultar' : 'Ver' }}
+              <svg v-if="showPassword" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 4l16 16" />
+                <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+                <path d="M7.4 7.7C5.9 8.7 4.7 10.1 4 12c1.4 3.5 4.1 5.5 8 5.5 1.6 0 3-.3 4.2-1" />
+                <path d="M10.7 6.6c.4-.1.9-.1 1.3-.1 3.9 0 6.6 2 8 5.5-.4 1.1-1 2-1.8 2.8" />
+              </svg>
+              <svg v-else viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 12c1.4-3.5 4.1-5.5 8-5.5s6.6 2 8 5.5c-1.4 3.5-4.1 5.5-8 5.5s-6.6-2-8-5.5Z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
             </button>
           </div>
         </div>
@@ -147,11 +183,16 @@ async function handleLogin() {
 
       <p class="auth-footer">
         Ainda não tem conta?
-        <RouterLink to="/register">Criar conta <span aria-hidden="true">-></span></RouterLink>
+        <RouterLink to="/register">Criar conta <span aria-hidden="true">→</span></RouterLink>
       </p>
 
       <p class="secure-note">
-        <span aria-hidden="true">◇</span>
+        <span aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <path d="M12 3.5 18.5 6v5.1c0 4.2-2.6 7.5-6.5 9.4-3.9-1.9-6.5-5.2-6.5-9.4V6z" />
+            <path d="m9.2 12.1 1.9 1.9 3.9-4.1" />
+          </svg>
+        </span>
         Seus dados protegidos com criptografia de ponta a ponta.
       </p>
     </section>
@@ -162,10 +203,10 @@ async function handleLogin() {
 .login-page {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(420px, 0.8fr);
-  gap: clamp(1.5rem, 4vw, 4.5rem);
+  grid-template-columns: minmax(0, 1fr) minmax(430px, 0.58fr);
+  gap: clamp(1.5rem, 5vw, 5.8rem);
   align-items: center;
-  padding: clamp(2rem, 6vw, 5rem) clamp(1.25rem, 7vw, 6.5rem);
+  padding: clamp(2rem, 5.4vw, 4.8rem) clamp(1.25rem, 6.4vw, 6.8rem);
   background-color: #eefcf9;
   background-position: center;
   background-size: cover;
@@ -178,7 +219,7 @@ async function handleLogin() {
   display: grid;
   align-content: start;
   gap: clamp(1.5rem, 3vw, 2.2rem);
-  padding-top: clamp(0rem, 3vw, 2rem);
+  padding-top: clamp(0rem, 2.4vw, 1.65rem);
 }
 
 .login-brand {
@@ -190,6 +231,7 @@ async function handleLogin() {
   font-family: 'Sora', sans-serif;
   font-size: clamp(1.25rem, 2vw, 1.8rem);
   font-weight: 800;
+  letter-spacing: 0;
 }
 
 .brand-mark {
@@ -213,7 +255,7 @@ async function handleLogin() {
 .login-heading h1 {
   color: #0f1d35;
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(2.25rem, 5vw, 4.4rem);
+  font-size: clamp(2.45rem, 4.5vw, 4.45rem);
   line-height: 1.05;
   letter-spacing: 0;
 }
@@ -227,7 +269,7 @@ async function handleLogin() {
   max-width: 620px;
   color: #55657d;
   font-size: clamp(1rem, 1.35vw, 1.24rem);
-  line-height: 1.65;
+  line-height: 1.68;
 }
 
 .benefit-grid {
@@ -251,17 +293,29 @@ async function handleLogin() {
 }
 
 .benefit-card span {
-  width: 2.2rem;
-  height: 2.2rem;
-  border-radius: 12px;
+  width: 2.45rem;
+  height: 2.45rem;
+  border-radius: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  background: #d7fbf2;
+  background: linear-gradient(135deg, #d7fbf2, #e8f8ff);
   color: #069a8d;
-  font-size: 0.72rem;
-  font-weight: 900;
+}
+
+.benefit-card svg,
+.input-shell svg,
+.password-toggle svg,
+.login-submit svg,
+.secure-note svg {
+  width: 1.18rem;
+  height: 1.18rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
 }
 
 .benefit-card strong {
@@ -272,8 +326,8 @@ async function handleLogin() {
 
 .floating-insights {
   position: absolute;
-  top: 12%;
-  right: 3%;
+  top: 16%;
+  right: -1%;
   width: 230px;
   height: 260px;
   pointer-events: none;
@@ -345,16 +399,16 @@ async function handleLogin() {
 }
 
 .login-panel {
-  width: min(100%, 560px);
+  width: min(100%, 610px);
   justify-self: center;
   display: grid;
-  gap: 1.28rem;
-  padding: clamp(1.45rem, 3vw, 2.7rem);
+  gap: 1.3rem;
+  padding: clamp(1.55rem, 3vw, 2.85rem);
   border: 1px solid rgba(255, 255, 255, 0.84);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 28px 70px rgba(14, 83, 77, 0.18);
-  backdrop-filter: blur(18px);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 30px 80px rgba(14, 83, 77, 0.18);
+  backdrop-filter: blur(20px);
 }
 
 .access-pill {
@@ -378,7 +432,7 @@ async function handleLogin() {
 
 .panel-header h2 {
   color: #0f1d35;
-  font-size: clamp(1.75rem, 3vw, 2.35rem);
+  font-size: clamp(1.72rem, 2.75vw, 2.35rem);
   letter-spacing: 0;
 }
 
@@ -392,7 +446,7 @@ async function handleLogin() {
 
 .login-form {
   display: grid;
-  gap: 1.02rem;
+  gap: 1.04rem;
 }
 
 .login-field {
@@ -425,8 +479,8 @@ async function handleLogin() {
 }
 
 .input-shell > span {
+  display: inline-flex;
   color: #62728a;
-  font-weight: 900;
 }
 
 .input-shell input {
@@ -444,11 +498,14 @@ async function handleLogin() {
 }
 
 .password-toggle {
+  width: 2rem;
+  height: 2rem;
   border: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: transparent;
   color: #53657c;
-  font-size: 0.82rem;
-  font-weight: 900;
   cursor: pointer;
 }
 
@@ -501,6 +558,11 @@ async function handleLogin() {
   font-weight: 900;
   font-size: 1rem;
   cursor: pointer;
+}
+
+.login-submit span,
+.secure-note span {
+  display: inline-flex;
 }
 
 .login-submit:disabled {
@@ -573,7 +635,6 @@ async function handleLogin() {
 
 .secure-note span {
   color: #069a8d;
-  font-weight: 900;
 }
 
 @media (max-width: 1180px) {
