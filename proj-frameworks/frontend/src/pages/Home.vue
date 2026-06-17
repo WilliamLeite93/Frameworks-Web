@@ -2,15 +2,20 @@
 import { computed } from 'vue';
 import { useAuthStore } from '@/store/auth';
 import bgHomeImage from '@/assets/bg-home.png';
+import calendarioImage from '@/assets/calendario.png';
+import despertadorImage from '@/assets/despertador.png';
+import disciplinaImage from '@/assets/disciplina.png';
+import livrosImage from '@/assets/livros.png';
+import ritmoImage from '@/assets/ritmo.png';
 
 const authStore = useAuthStore();
 const userName = computed(() => authStore.userName || 'Gabriel');
 
 const stats = [
-  { label: 'Resumos salvos', value: '120+', detail: '26 esta semana', tone: 'mint', icon: 'RS' },
-  { label: 'Disciplinas', value: '14', detail: '2 ativas hoje', tone: 'violet', icon: 'DI' },
-  { label: 'Horas estudadas', value: '32h', detail: '+5h vs semana passada', tone: 'amber', icon: 'HE' },
-  { label: 'Ritmo semanal', value: '5 dias', detail: 'Meta: 6 dias', tone: 'blue', icon: 'RW' },
+  { label: 'Resumos salvos', value: '120+', detail: '26 esta semana', tone: 'mint', icon: 'RS', image: livrosImage },
+  { label: 'Disciplinas', value: '14', detail: '2 ativas hoje', tone: 'violet', icon: 'DI', image: disciplinaImage },
+  { label: 'Horas estudadas', value: '32h', detail: '+5h vs semana passada', tone: 'amber', icon: 'HE', image: despertadorImage },
+  { label: 'Ritmo semanal', value: '5 dias', detail: 'Meta: 6 dias', tone: 'blue', icon: 'RW', image: ritmoImage },
 ];
 
 const weekData = [
@@ -64,7 +69,10 @@ const goalDays = [
 
       <div class="topbar-actions">
         <div class="streak-pill">
-          <span class="streak-mark">7</span>
+          <span class="streak-mark">
+            <img :src="calendarioImage" alt="" aria-hidden="true" />
+            <span class="fallback-text">7</span>
+          </span>
           <div>
             <strong>7 dias</strong>
             <small>Sequência atual</small>
@@ -77,7 +85,10 @@ const goalDays = [
 
     <section class="stats-grid" aria-label="Resumo dos estudos">
       <article v-for="stat in stats" :key="stat.label" class="surface-card stat-tile">
-        <span class="tile-icon" :class="stat.tone">{{ stat.icon }}</span>
+        <span class="tile-icon" :class="stat.tone">
+          <img :src="stat.image" alt="" aria-hidden="true" />
+          <span class="fallback-text">{{ stat.icon }}</span>
+        </span>
         <div>
           <small>{{ stat.label }}</small>
           <strong>{{ stat.value }}</strong>
@@ -306,6 +317,12 @@ const goalDays = [
   font-weight: 900;
 }
 
+.streak-mark img {
+  width: 1.35rem;
+  height: 1.35rem;
+  object-fit: contain;
+}
+
 :global(body.theme-dark) .streak-mark {
   color: #fcd34d;
 }
@@ -357,10 +374,25 @@ const goalDays = [
   font-weight: 900;
 }
 
+.tile-icon img {
+  width: 2.15rem;
+  height: 2.15rem;
+  object-fit: contain;
+}
+
+.fallback-text {
+  display: none;
+}
+
 .tile-icon.compact {
   width: 2.55rem;
   height: 2.55rem;
   font-size: 0.7rem;
+}
+
+.tile-icon.compact img {
+  width: 1.55rem;
+  height: 1.55rem;
 }
 
 .mint {
