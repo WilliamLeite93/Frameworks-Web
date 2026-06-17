@@ -238,8 +238,8 @@ async function handleSubmit() {
 
 :global(body.theme-dark) .upload-hero {
   background:
-    radial-gradient(circle at 100% 0%, rgba(45, 212, 191, 0.18), transparent 34%),
-    linear-gradient(145deg, rgba(5, 54, 49, 0.98), rgba(1, 23, 21, 0.96));
+    radial-gradient(circle at 100% 0%, rgba(18, 214, 196, 0.12), transparent 34%),
+    linear-gradient(145deg, rgba(9, 20, 34, 0.96), rgba(5, 13, 26, 0.98));
 }
 
 .upload-hero h1 {
@@ -358,8 +358,8 @@ form .btn {
 }
 
 :global(body.theme-dark) .tips-box {
-  border: 1px solid rgba(45, 212, 191, 0.24);
-  background: linear-gradient(135deg, rgba(15, 118, 110, 0.24), rgba(14, 165, 233, 0.14));
+  border: 1px solid rgba(18, 214, 196, 0.2);
+  background: linear-gradient(135deg, rgba(18, 214, 196, 0.1), rgba(14, 165, 233, 0.08));
 }
 
 .tips-box strong {
@@ -368,7 +368,7 @@ form .btn {
 }
 
 :global(body.theme-dark) .tips-box strong {
-  color: #5eead4;
+  color: var(--bl-primary);
 }
 
 .tips-box span {
@@ -435,10 +435,10 @@ form .btn {
 }
 
 :global(body.theme-dark) .drop-zone {
-  border-color: rgba(45, 212, 191, 0.42);
+  border-color: rgba(18, 214, 196, 0.32);
   background:
-    radial-gradient(circle at 50% 8%, rgba(45, 212, 191, 0.18), transparent 34%),
-    rgba(5, 54, 49, 0.72);
+    radial-gradient(circle at 50% 8%, rgba(18, 214, 196, 0.13), transparent 34%),
+    rgba(15, 23, 42, 0.5);
 }
 
 .drop-zone.dragging,
@@ -450,8 +450,8 @@ form .btn {
 
 :global(body.theme-dark) .drop-zone.dragging,
 :global(body.theme-dark) .drop-zone:hover {
-  border-color: #5eead4;
-  background: rgba(20, 184, 166, 0.16);
+  border-color: var(--bl-primary);
+  background: rgba(18, 214, 196, 0.1);
 }
 
 .drop-zone input {
@@ -495,8 +495,8 @@ form .btn {
 }
 
 :global(body.theme-dark) .drop-zone b {
-  border-color: rgba(94, 234, 212, 0.44);
-  color: #5eead4;
+  border-color: rgba(18, 214, 196, 0.38);
+  color: var(--bl-primary);
 }
 
 .drop-zone em {
@@ -573,9 +573,9 @@ form .btn {
 }
 
 :global(body.theme-dark) .file-list button:hover {
-  color: #5eead4;
-  border-color: rgba(45, 212, 191, 0.42);
-  background: rgba(20, 184, 166, 0.16);
+  color: var(--bl-primary);
+  border-color: rgba(18, 214, 196, 0.36);
+  background: rgba(18, 214, 196, 0.1);
 }
 
 .empty-files {

@@ -207,8 +207,8 @@ onMounted(loadSummaries);
 
 :global(body.theme-dark) .library-hero {
   background:
-    radial-gradient(circle at 100% 0%, rgba(45, 212, 191, 0.18), transparent 34%),
-    linear-gradient(145deg, rgba(5, 54, 49, 0.98), rgba(1, 23, 21, 0.96));
+    radial-gradient(circle at 100% 0%, rgba(18, 214, 196, 0.12), transparent 34%),
+    linear-gradient(145deg, rgba(9, 20, 34, 0.96), rgba(5, 13, 26, 0.98));
 }
 
 :global(body.theme-dark) .library-hero .badge-info {
@@ -251,7 +251,8 @@ onMounted(loadSummaries);
 }
 
 :global(body.theme-dark) .stat-card {
-  background: rgba(5, 54, 49, 0.72);
+  background: rgba(15, 23, 42, 0.5);
+  border-color: rgba(148, 163, 184, 0.16);
 }
 
 .stat-icon,
@@ -330,7 +331,7 @@ onMounted(loadSummaries);
 }
 
 :global(body.theme-dark) .library-toolbar button {
-  color: #5eead4;
+  color: var(--bl-primary);
 }
 
 .summary-grid {
@@ -392,8 +393,8 @@ onMounted(loadSummaries);
 }
 
 :global(body.theme-dark) .summary-meta span {
-  background: rgba(45, 212, 191, 0.16);
-  color: #5eead4;
+  background: rgba(18, 214, 196, 0.12);
+  color: var(--bl-primary);
 }
 
 .summary-files {
@@ -416,7 +417,8 @@ onMounted(loadSummaries);
 }
 
 :global(body.theme-dark) .file-action {
-  background: rgba(5, 54, 49, 0.72);
+  background: rgba(15, 23, 42, 0.5);
+  border-color: rgba(148, 163, 184, 0.14);
 }
 
 .file-action:hover {
@@ -426,8 +428,8 @@ onMounted(loadSummaries);
 }
 
 :global(body.theme-dark) .file-action:hover {
-  border-color: rgba(94, 234, 212, 0.46);
-  background: rgba(20, 184, 166, 0.16);
+  border-color: rgba(18, 214, 196, 0.36);
+  background: rgba(18, 214, 196, 0.1);
 }
 
 .file-badge {
@@ -461,7 +463,7 @@ onMounted(loadSummaries);
 }
 
 :global(body.theme-dark) .file-action strong {
-  color: #5eead4;
+  color: var(--bl-primary);
 }
 
 .no-files {

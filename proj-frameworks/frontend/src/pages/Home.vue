@@ -5,6 +5,7 @@ import bgHomeImage from '@/assets/bg-home.png';
 import calendarioImage from '@/assets/calendario.png';
 import despertadorImage from '@/assets/despertador.png';
 import disciplinaImage from '@/assets/disciplina.png';
+import focoImage from '@/assets/foco.png';
 import livrosImage from '@/assets/livros.png';
 import ritmoImage from '@/assets/ritmo.png';
 
@@ -152,7 +153,7 @@ const goalDays = [
   >
     <header class="home-topbar">
       <div>
-        <h1>Bom dia, {{ userName }}!</h1>
+        <h1>Bom dia, <span>{{ userName }}!</span></h1>
         <p>Pronto para mais um dia de foco e conquistas?</p>
       </div>
 
@@ -421,9 +422,7 @@ const goalDays = [
       </article>
 
       <aside class="focus-panel">
-        <span>FO</span>
-        <h2>Foco hoje, resultado sempre.</h2>
-        <p>Disciplina é o que transforma planos em conquistas.</p>
+        <img :src="focoImage" alt="Foco hoje, resultado sempre." />
       </aside>
     </section>
 
@@ -563,7 +562,7 @@ const goalDays = [
       rgba(1, 23, 21, 0.96)
     ),
     var(--home-bg-image) center / cover no-repeat;
-  box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.12);
+  box-shadow: none;
 }
 
 .home-topbar {
@@ -576,6 +575,14 @@ const goalDays = [
 .home-topbar h1 {
   font-size: clamp(1.75rem, 3vw, 2.45rem);
   line-height: 1.1;
+}
+
+:global(body.theme-dark) .home-topbar h1 {
+  color: #f8fafc;
+}
+
+:global(body.theme-dark) .home-topbar h1 span {
+  color: var(--bl-primary);
 }
 
 .home-topbar p {
@@ -623,7 +630,8 @@ const goalDays = [
 }
 
 :global(body.theme-dark) .streak-mark {
-  color: #fcd34d;
+  background: rgba(245, 158, 11, 0.14);
+  color: #fbbf24;
 }
 
 .streak-pill strong,
@@ -645,7 +653,9 @@ const goalDays = [
 }
 
 :global(body.theme-dark) .icon-button {
-  color: #5eead4;
+  background: rgba(7, 17, 31, 0.88);
+  border-color: rgba(148, 163, 184, 0.16);
+  color: var(--bl-primary);
 }
 
 .stats-grid {
@@ -739,7 +749,51 @@ const goalDays = [
 }
 
 :global(body.theme-dark) .stat-tile p {
-  color: #5eead4;
+  color: var(--bl-primary);
+}
+
+:global(body.theme-dark) .stat-tile {
+  border-color: rgba(148, 163, 184, 0.16);
+  background:
+    radial-gradient(circle at 8% 20%, rgba(18, 214, 196, 0.08), transparent 34%),
+    linear-gradient(145deg, rgba(9, 20, 34, 0.94), rgba(5, 13, 26, 0.96));
+}
+
+:global(body.theme-dark) .stat-tile strong,
+:global(body.theme-dark) .goal-ring span,
+:global(body.theme-dark) .goal-content strong,
+:global(body.theme-dark) .subject-row b {
+  color: #f8fafc;
+}
+
+:global(body.theme-dark) .mint {
+  background: linear-gradient(145deg, rgba(18, 214, 196, 0.2), rgba(18, 214, 196, 0.06));
+  color: #67f8e8;
+  border: 1px solid rgba(18, 214, 196, 0.24);
+}
+
+:global(body.theme-dark) .violet {
+  background: linear-gradient(145deg, rgba(139, 92, 246, 0.22), rgba(139, 92, 246, 0.07));
+  color: #c4b5fd;
+  border: 1px solid rgba(139, 92, 246, 0.22);
+}
+
+:global(body.theme-dark) .amber {
+  background: linear-gradient(145deg, rgba(245, 158, 11, 0.24), rgba(245, 158, 11, 0.08));
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.22);
+}
+
+:global(body.theme-dark) .blue {
+  background: linear-gradient(145deg, rgba(59, 130, 246, 0.24), rgba(59, 130, 246, 0.08));
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.22);
+}
+
+:global(body.theme-dark) .rose {
+  background: linear-gradient(145deg, rgba(248, 113, 113, 0.22), rgba(248, 113, 113, 0.07));
+  color: #fecaca;
+  border: 1px solid rgba(248, 113, 113, 0.2);
 }
 
 .mini-progress,
@@ -816,10 +870,12 @@ const goalDays = [
 :global(body.theme-dark) .card-header a,
 :global(body.theme-dark) .card-header button,
 :global(body.theme-dark) .text-link {
-  color: #5eead4;
+  color: var(--bl-primary);
 }
 
 :global(body.theme-dark) .filter-button {
+  background: rgba(7, 17, 31, 0.82);
+  border-color: rgba(148, 163, 184, 0.16);
   color: #cbd5e1;
 }
 
@@ -874,8 +930,9 @@ const goalDays = [
 }
 
 :global(body.theme-dark) .insight-note {
-  border-color: rgba(45, 212, 191, 0.24);
-  color: #5eead4;
+  background: rgba(18, 214, 196, 0.1);
+  border-color: rgba(18, 214, 196, 0.2);
+  color: var(--bl-primary);
 }
 
 .step-list,
@@ -906,8 +963,8 @@ const goalDays = [
 }
 
 :global(body.theme-dark) .step-row:hover {
-  border-color: rgba(94, 234, 212, 0.38);
-  background: rgba(20, 184, 166, 0.16);
+  border-color: rgba(18, 214, 196, 0.32);
+  background: rgba(18, 214, 196, 0.1);
 }
 
 .step-row strong,
@@ -969,25 +1026,12 @@ const goalDays = [
   box-shadow: var(--shadow-strong);
 }
 
-.focus-panel span {
-  width: 3.7rem;
-  height: 3.7rem;
-  border-radius: 999px;
-  display: grid;
-  place-items: center;
-  background: rgba(45, 212, 191, 0.3);
-  font-weight: 900;
-}
-
-.focus-panel h2 {
-  max-width: 12rem;
-  font-size: 1.35rem;
-}
-
-.focus-panel p {
-  max-width: 14rem;
-  color: rgba(248, 250, 252, 0.82);
-  line-height: 1.6;
+.focus-panel img {
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  display: block;
+  object-fit: cover;
 }
 
 .lower-grid {
@@ -1097,7 +1141,59 @@ const goalDays = [
 }
 
 :global(body.theme-dark) .goal-days i {
-  color: #5eead4;
+  color: var(--bl-primary);
+}
+
+:global(body.theme-dark) .weekly-card,
+:global(body.theme-dark) .next-card,
+:global(body.theme-dark) .focus-subjects,
+:global(body.theme-dark) .activity-card,
+:global(body.theme-dark) .goals-card {
+  border-color: rgba(148, 163, 184, 0.16);
+  background:
+    radial-gradient(circle at 12% 0%, rgba(18, 214, 196, 0.07), transparent 30%),
+    linear-gradient(145deg, rgba(9, 20, 34, 0.94), rgba(5, 13, 26, 0.96));
+}
+
+:global(body.theme-dark) .card-header h2,
+:global(body.theme-dark) .step-row strong,
+:global(body.theme-dark) .subject-row strong,
+:global(body.theme-dark) .activity-row strong {
+  color: #f8fafc;
+}
+
+:global(body.theme-dark) .step-row {
+  border-color: rgba(148, 163, 184, 0.14);
+  background: rgba(15, 23, 42, 0.4);
+}
+
+:global(body.theme-dark) .step-row b {
+  color: #cbd5e1;
+}
+
+:global(body.theme-dark) .focus-panel {
+  border: 1px solid rgba(18, 214, 196, 0.28);
+  background: #020817;
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+:global(body.theme-dark) .mini-progress,
+:global(body.theme-dark) .progress-line {
+  background: rgba(148, 163, 184, 0.14);
+}
+
+:global(body.theme-dark) .mini-progress i,
+:global(body.theme-dark) .progress-line i {
+  background: linear-gradient(90deg, #12d6c4, #0aa99b);
+}
+
+:global(body.theme-dark) .goal-ring::after {
+  background: #07111f;
+}
+
+:global(body.theme-dark) .goal-days .done i {
+  background: rgba(18, 214, 196, 0.16);
+  border-color: rgba(18, 214, 196, 0.18);
 }
 
 .goal-days .done i {

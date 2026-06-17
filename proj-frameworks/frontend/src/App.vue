@@ -323,7 +323,10 @@ onUnmounted(() => {
 }
 
 :global(body.theme-dark) .sidebar-user {
-  background: rgba(5, 54, 49, 0.72);
+  background:
+    linear-gradient(135deg, rgba(18, 214, 196, 0.12), rgba(15, 23, 42, 0.72));
+  border-color: rgba(18, 214, 196, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .sidebar-user small {
@@ -348,7 +351,9 @@ onUnmounted(() => {
 }
 
 :global(body.theme-dark) .todo-panel {
-  background: rgba(5, 54, 49, 0.72);
+  background: rgba(7, 17, 31, 0.72);
+  border-color: rgba(148, 163, 184, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .todo-panel h3 {
@@ -371,6 +376,7 @@ onUnmounted(() => {
 :global(body.theme-dark) .todo-form input {
   background: var(--bl-surface);
   color: var(--bl-text);
+  border-color: rgba(148, 163, 184, 0.22);
 }
 
 .todo-form .btn {
@@ -401,7 +407,8 @@ onUnmounted(() => {
 }
 
 :global(body.theme-dark) .todo-list li {
-  background: rgba(1, 23, 21, 0.38);
+  background: rgba(2, 8, 23, 0.54);
+  border-color: rgba(148, 163, 184, 0.14);
 }
 
 .todo-list li.done span {
@@ -444,9 +451,9 @@ onUnmounted(() => {
 }
 
 :global(body.theme-dark) .todo-remove:hover {
-  color: #5eead4;
-  border-color: rgba(45, 212, 191, 0.42);
-  background: rgba(20, 184, 166, 0.16);
+  color: var(--bl-primary);
+  border-color: rgba(18, 214, 196, 0.42);
+  background: rgba(18, 214, 196, 0.12);
 }
 
 .todo-empty {

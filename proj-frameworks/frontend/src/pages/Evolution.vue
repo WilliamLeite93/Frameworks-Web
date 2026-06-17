@@ -307,10 +307,10 @@ onMounted(loadSummaries);
 
 :global(body.theme-dark) .evolution-hero {
   background:
-    linear-gradient(90deg, rgba(5, 54, 49, 0.98) 0%, rgba(5, 54, 49, 0.9) 48%, rgba(5, 54, 49, 0.24) 76%),
+    linear-gradient(90deg, rgba(5, 13, 26, 0.98) 0%, rgba(7, 17, 31, 0.92) 48%, rgba(7, 17, 31, 0.24) 76%),
     var(--hero-bg-image) center / cover no-repeat,
-    radial-gradient(circle at 100% 0%, rgba(45, 212, 191, 0.18), transparent 34%),
-    linear-gradient(145deg, rgba(5, 54, 49, 0.98), rgba(1, 23, 21, 0.96));
+    radial-gradient(circle at 100% 0%, rgba(18, 214, 196, 0.12), transparent 34%),
+    linear-gradient(145deg, rgba(9, 20, 34, 0.98), rgba(5, 13, 26, 0.96));
 }
 
 .evolution-hero h1 {
@@ -480,8 +480,9 @@ onMounted(loadSummaries);
 
 :global(body.theme-dark) .insight-note,
 :global(body.theme-dark) .gold-tip {
-  border: 1px solid rgba(45, 212, 191, 0.24);
-  color: #5eead4;
+  border: 1px solid rgba(18, 214, 196, 0.22);
+  background: rgba(18, 214, 196, 0.1);
+  color: var(--bl-primary);
 }
 
 .subject-content {
@@ -562,7 +563,7 @@ onMounted(loadSummaries);
 }
 
 :global(body.theme-dark) .outline-link {
-  color: #5eead4;
+  color: var(--bl-primary);
 }
 
 .heatmap {
@@ -583,7 +584,7 @@ onMounted(loadSummaries);
 }
 
 :global(body.theme-dark) .level-0 {
-  background: #12443f;
+  background: rgba(148, 163, 184, 0.14);
 }
 
 .level-1 {
@@ -652,7 +653,7 @@ onMounted(loadSummaries);
 }
 
 :global(body.theme-dark) .month-stats p {
-  color: #5eead4;
+  color: var(--bl-primary);
 }
 
 .bars {
@@ -718,10 +719,10 @@ onMounted(loadSummaries);
 
   :global(body.theme-dark) .evolution-hero {
     background:
-      linear-gradient(180deg, rgba(5, 54, 49, 0.98) 0%, rgba(5, 54, 49, 0.9) 60%, rgba(5, 54, 49, 0.28) 100%),
+      linear-gradient(180deg, rgba(5, 13, 26, 0.98) 0%, rgba(7, 17, 31, 0.92) 60%, rgba(7, 17, 31, 0.28) 100%),
       var(--hero-bg-image) center / cover no-repeat,
-      radial-gradient(circle at 100% 0%, rgba(45, 212, 191, 0.18), transparent 34%),
-      linear-gradient(145deg, rgba(5, 54, 49, 0.98), rgba(1, 23, 21, 0.96));
+      radial-gradient(circle at 100% 0%, rgba(18, 214, 196, 0.12), transparent 34%),
+      linear-gradient(145deg, rgba(9, 20, 34, 0.98), rgba(5, 13, 26, 0.96));
   }
 
   .evolution-stats,
