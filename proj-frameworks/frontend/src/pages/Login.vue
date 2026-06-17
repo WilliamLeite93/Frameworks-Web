@@ -139,16 +139,12 @@ async function handleLogin() {
         <p v-if="errorMessage" class="field-error">{{ errorMessage }}</p>
 
         <button type="submit" class="login-submit" :disabled="loading">
-          <span aria-hidden="true">▣</span>
           {{ loading ? 'Entrando...' : 'Entrar' }}
         </button>
 
         <div class="divider"><span>ou continue com</span></div>
 
-        <div class="social-actions">
-          <button type="button"><span>G</span>Continuar com Google</button>
-          <button type="button"><span>A</span>Continuar com Apple</button>
-        </div>
+        
       </form>
 
       <p class="auth-footer">
