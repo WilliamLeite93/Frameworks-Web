@@ -81,8 +81,17 @@ const summarySchema = z.object({
   subject: z.string().trim().min(2),
   description: z.string().trim().optional().default(''),
   status: z.string().optional().default('Novo'),
+  reviewReminderAt: z.string().datetime().nullable().optional(),
   createdAt: z.string().datetime().optional(),
   fileNames: z.array(z.string().trim().min(1)).optional().default([]),
+});
+
+const summaryUpdateSchema = z.object({
+  title: z.string().trim().min(2).optional(),
+  subject: z.string().trim().min(2).optional(),
+  description: z.string().trim().optional(),
+  status: z.string().optional(),
+  reviewReminderAt: z.string().datetime().nullable().optional(),
 });
 
 const statusLabels: Record<SummaryStatus, string> = {
@@ -221,7 +230,9 @@ function publicSummary(summary: {
   subject: string;
   description: string | null;
   status: SummaryStatus;
+  reviewReminderAt?: Date | null;
   createdAt: Date;
+  updatedAt?: Date;
   files?: { id: number; fileName: string; storedName: string | null; mimeType: string | null; size: number | null }[];
 }) {
   return {
@@ -231,7 +242,9 @@ function publicSummary(summary: {
     subject: summary.subject,
     description: summary.description || '',
     status: statusLabels[summary.status],
+    reviewReminderAt: summary.reviewReminderAt ? summary.reviewReminderAt.toISOString() : null,
     createdAt: summary.createdAt.toISOString(),
+    updatedAt: summary.updatedAt?.toISOString(),
     fileNames: summary.files?.map((file) => file.fileName) || [],
     files:
       summary.files?.map((file) => ({
@@ -460,6 +473,22 @@ app.get('/summaries', authenticate, async (req, res, next) => {
   }
 });
 
+app.get('/summaries/:id', authenticate, async (req, res, next) => {
+  try {
+    const id = z.coerce.number().int().positive().parse(req.params.id);
+    const summary = await prisma.summary.findUniqueOrThrow({
+      where: { id },
+      include: { files: true },
+    });
+
+    if (!assertOwner(req, res, summary.ownerId)) return;
+
+    res.json(publicSummary(summary));
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.post('/summaries', authenticate, async (req, res, next) => {
   try {
     const payload = summarySchema.parse(req.body);
@@ -473,6 +502,7 @@ app.post('/summaries', authenticate, async (req, res, next) => {
         subject: payload.subject,
         description: payload.description,
         status: toStatus(payload.status),
+        reviewReminderAt: payload.reviewReminderAt ? new Date(payload.reviewReminderAt) : undefined,
         createdAt: payload.createdAt ? new Date(payload.createdAt) : undefined,
         files: {
           create: payload.fileNames.map((fileName) => ({ fileName })),
@@ -488,6 +518,55 @@ app.post('/summaries', authenticate, async (req, res, next) => {
     }
 
     return next(error);
+  }
+});
+
+app.patch('/summaries/:id', authenticate, async (req, res, next) => {
+  try {
+    const id = z.coerce.number().int().positive().parse(req.params.id);
+    const payload = summaryUpdateSchema.parse(req.body);
+    const summary = await prisma.summary.findUniqueOrThrow({ where: { id } });
+
+    if (!assertOwner(req, res, summary.ownerId)) return;
+
+    const updated = await prisma.summary.update({
+      where: { id },
+      data: {
+        title: payload.title,
+        subject: payload.subject,
+        description: payload.description,
+        status: payload.status ? toStatus(payload.status) : undefined,
+        reviewReminderAt:
+          payload.reviewReminderAt === undefined
+            ? undefined
+            : payload.reviewReminderAt
+              ? new Date(payload.reviewReminderAt)
+              : null,
+      },
+      include: { files: true },
+    });
+
+    res.json(publicSummary(updated));
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ message: 'Dados do resumo inválidos.', issues: error.issues });
+    }
+
+    return next(error);
+  }
+});
+
+app.delete('/summaries/:id', authenticate, async (req, res, next) => {
+  try {
+    const id = z.coerce.number().int().positive().parse(req.params.id);
+    const summary = await prisma.summary.findUniqueOrThrow({ where: { id } });
+
+    if (!assertOwner(req, res, summary.ownerId)) return;
+
+    await prisma.summary.delete({ where: { id } });
+    res.status(204).send();
+  } catch (error) {
+    next(error);
   }
 });
 

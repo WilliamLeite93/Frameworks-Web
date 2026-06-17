@@ -27,6 +27,12 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/abstracts/:id',
+    name: 'SummaryDetail',
+    component: () => import('@/pages/SummaryDetail.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/evolution',
     name: 'Evolution',
     component: () => import('@/pages/Evolution.vue'),
@@ -70,6 +76,7 @@ router.afterEach((to) => {
     Dashboard: 'BrainLog | Dashboard',
     Upload: 'BrainLog | Upload',
     Abstracts: 'BrainLog | Biblioteca de Resumos',
+    SummaryDetail: 'BrainLog | Detalhes do Resumo',
     Evolution: 'BrainLog | Evolução',
   };
 

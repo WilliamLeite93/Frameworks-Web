@@ -27,6 +27,12 @@ const weekFileCount = computed(() => weekSummaries.value.reduce((total, item) =>
 const uniqueSubjects = computed(() => new Set(summaries.value.map((item) => item.subject).filter(Boolean)));
 const activeWeekDays = computed(() => new Set(weekSummaries.value.map((item) => new Date(item.createdAt).toDateString())));
 const weeklyProgress = computed(() => Math.round((activeWeekDays.value.size / weekDaysTotal) * 100));
+const dueReminders = computed(() => {
+  const now = Date.now();
+  return summaries.value.filter((item) => item.reviewReminderAt && new Date(item.reviewReminderAt).getTime() <= now);
+});
+const pendingReviews = computed(() => summaries.value.filter((item) => item.status !== 'Revisado'));
+const notificationCount = computed(() => new Set([...dueReminders.value, ...pendingReviews.value].map((item) => item.id)).size);
 
 const streakDays = computed(() => {
   const activeDays = new Set(summaries.value.map((item) => new Date(item.createdAt).toDateString()));
@@ -290,14 +296,13 @@ watch(() => authStore.user?.id, loadHomeData);
           </div>
         </div>
 
-        <button
-          type="button"
+        <RouterLink
+          to="/abstracts"
           class="icon-button"
-          aria-label="Atualizar painel"
-          @click="loadHomeData"
+          :aria-label="`${notificationCount} notificações de revisão`"
         >
-          {{ loading ? '...' : activities.length }}
-        </button>
+          {{ loading ? '...' : notificationCount }}
+        </RouterLink>
 
         <RouterLink
           to="/upload"
@@ -770,6 +775,9 @@ watch(() => authStore.user?.id, loadHomeData);
   width: 2.8rem;
   height: 2.8rem;
   border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--bl-primary);
   font-weight: 900;
 }
