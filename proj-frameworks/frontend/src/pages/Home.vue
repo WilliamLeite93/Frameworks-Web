@@ -12,10 +12,38 @@ const authStore = useAuthStore();
 const userName = computed(() => authStore.userName || 'Gabriel');
 
 const stats = [
-  { label: 'Resumos salvos', value: '120+', detail: '26 esta semana', tone: 'mint', icon: 'RS', image: livrosImage },
-  { label: 'Disciplinas', value: '14', detail: '2 ativas hoje', tone: 'violet', icon: 'DI', image: disciplinaImage },
-  { label: 'Horas estudadas', value: '32h', detail: '+5h vs semana passada', tone: 'amber', icon: 'HE', image: despertadorImage },
-  { label: 'Ritmo semanal', value: '5 dias', detail: 'Meta: 6 dias', tone: 'blue', icon: 'RW', image: ritmoImage },
+  {
+    label: 'Resumos salvos',
+    value: '120+',
+    detail: '26 esta semana',
+    tone: 'mint',
+    icon: 'RS',
+    image: livrosImage,
+  },
+  {
+    label: 'Disciplinas',
+    value: '14',
+    detail: '2 ativas hoje',
+    tone: 'violet',
+    icon: 'DI',
+    image: disciplinaImage,
+  },
+  {
+    label: 'Horas estudadas',
+    value: '32h',
+    detail: '+5h vs semana passada',
+    tone: 'amber',
+    icon: 'HE',
+    image: despertadorImage,
+  },
+  {
+    label: 'Ritmo semanal',
+    value: '5 dias',
+    detail: 'Meta: 6 dias',
+    tone: 'blue',
+    icon: 'RW',
+    image: ritmoImage,
+  },
 ];
 
 const weekData = [
@@ -29,23 +57,81 @@ const weekData = [
 ];
 
 const nextSteps = [
-  { title: 'Revisar Matemática', subtitle: 'Funções e equações', time: 'Hoje - 19:00', tone: 'mint', icon: 'MA' },
-  { title: 'Revisar Resumo', subtitle: 'História do Brasil', time: 'Amanhã - 10:00', tone: 'violet', icon: 'HI' },
-  { title: 'Questões', subtitle: 'Física - Mecânica', time: 'Amanhã - 14:00', tone: 'amber', icon: 'FI' },
+  {
+    title: 'Revisar Matemática',
+    subtitle: 'Funções e equações',
+    time: 'Hoje - 19:00',
+    tone: 'mint',
+    icon: 'MA',
+  },
+  {
+    title: 'Revisar Resumo',
+    subtitle: 'História do Brasil',
+    time: 'Amanhã - 10:00',
+    tone: 'violet',
+    icon: 'HI',
+  },
+  {
+    title: 'Questões',
+    subtitle: 'Física - Mecânica',
+    time: 'Amanhã - 14:00',
+    tone: 'amber',
+    icon: 'FI',
+  },
 ];
 
 const subjects = [
-  { name: 'Matemática', detail: '6 resumos - 4h estudadas', progress: 75, tone: 'blue' },
-  { name: 'Física', detail: '4 resumos - 3h estudadas', progress: 60, tone: 'violet' },
-  { name: 'História', detail: '3 resumos - 2h estudadas', progress: 40, tone: 'amber' },
-  { name: 'Biologia', detail: '2 resumos - 1h estudada', progress: 25, tone: 'mint' },
+  {
+    name: 'Matemática',
+    detail: '6 resumos - 4h estudadas',
+    progress: 75,
+    tone: 'blue',
+  },
+  {
+    name: 'Física',
+    detail: '4 resumos - 3h estudadas',
+    progress: 60,
+    tone: 'violet',
+  },
+  {
+    name: 'História',
+    detail: '3 resumos - 2h estudadas',
+    progress: 40,
+    tone: 'amber',
+  },
+  {
+    name: 'Biologia',
+    detail: '2 resumos - 1h estudada',
+    progress: 25,
+    tone: 'mint',
+  },
 ];
 
 const activities = [
-  { title: 'Resumo salvo', detail: 'Funções do 1º grau - Matemática', time: 'Há 2h', tone: 'mint' },
-  { title: 'Arquivo enviado', detail: 'Apostila Física - Mecânica.pdf', time: 'Há 4h', tone: 'rose' },
-  { title: 'Questões concluídas', detail: '20 questões de Física', time: 'Há 6h', tone: 'violet' },
-  { title: 'Meta semanal atualizada', detail: 'Estudar 6 dias por semana', time: 'Há 1d', tone: 'mint' },
+  {
+    title: 'Resumo salvo',
+    detail: 'Funções do 1º grau - Matemática',
+    time: 'Há 2h',
+    tone: 'mint',
+  },
+  {
+    title: 'Arquivo enviado',
+    detail: 'Apostila Física - Mecânica.pdf',
+    time: 'Há 4h',
+    tone: 'rose',
+  },
+  {
+    title: 'Questões concluídas',
+    detail: '20 questões de Física',
+    time: 'Há 6h',
+    tone: 'violet',
+  },
+  {
+    title: 'Meta semanal atualizada',
+    detail: 'Estudar 6 dias por semana',
+    time: 'Há 1d',
+    tone: 'mint',
+  },
 ];
 
 const goalDays = [
@@ -60,7 +146,10 @@ const goalDays = [
 </script>
 
 <template>
-  <div class="home-dashboard fade-in-up" :style="{ '--home-bg-image': `url(${bgHomeImage})` }">
+  <div
+    class="home-dashboard fade-in-up"
+    :style="{ '--home-bg-image': `url(${bgHomeImage})` }"
+  >
     <header class="home-topbar">
       <div>
         <h1>Bom dia, {{ userName }}!</h1>
@@ -70,30 +159,73 @@ const goalDays = [
       <div class="topbar-actions">
         <div class="streak-pill">
           <span class="streak-mark">
-            <img :src="calendarioImage" alt="" aria-hidden="true" />
+            <img
+              :src="calendarioImage"
+              alt=""
+              aria-hidden="true"
+            />
+
             <span class="fallback-text">7</span>
           </span>
+
           <div>
             <strong>7 dias</strong>
             <small>Sequência atual</small>
           </div>
         </div>
-        <button type="button" class="icon-button" aria-label="Notificações">3</button>
-        <RouterLink to="/upload" class="btn btn-primary">+ Nova tarefa</RouterLink>
+
+        <button
+          type="button"
+          class="icon-button"
+          aria-label="Notificações"
+        >
+          3
+        </button>
+
+        <RouterLink
+          to="/upload"
+          class="btn btn-primary"
+        >
+          + Nova tarefa
+        </RouterLink>
       </div>
     </header>
 
-    <section class="stats-grid" aria-label="Resumo dos estudos">
-      <article v-for="stat in stats" :key="stat.label" class="surface-card stat-tile">
-        <span class="tile-icon" :class="stat.tone">
-          <img :src="stat.image" alt="" aria-hidden="true" />
-          <span class="fallback-text">{{ stat.icon }}</span>
+    <section
+      class="stats-grid"
+      aria-label="Resumo dos estudos"
+    >
+      <article
+        v-for="stat in stats"
+        :key="stat.label"
+        class="surface-card stat-tile"
+      >
+        <span
+          class="tile-icon"
+          :class="stat.tone"
+        >
+          <img
+            :src="stat.image"
+            alt=""
+            aria-hidden="true"
+          />
+
+          <span class="fallback-text">
+            {{ stat.icon }}
+          </span>
         </span>
+
         <div>
           <small>{{ stat.label }}</small>
           <strong>{{ stat.value }}</strong>
           <p>{{ stat.detail }}</p>
-          <span v-if="stat.label === 'Ritmo semanal'" class="mini-progress"><i /></span>
+
+          <span
+            v-if="stat.label === 'Ritmo semanal'"
+            class="mini-progress"
+          >
+            <i />
+          </span>
         </div>
       </article>
     </section>
@@ -102,51 +234,153 @@ const goalDays = [
       <article class="surface-card weekly-card">
         <div class="card-header">
           <h2>Seus estudos esta semana</h2>
-          <button type="button" class="filter-button">Esta semana</button>
+
+          <button
+            type="button"
+            class="filter-button"
+          >
+            Esta semana
+          </button>
         </div>
 
-        <div class="chart-wrap" aria-label="Gráfico de horas estudadas na semana">
-          <svg viewBox="0 0 520 230" role="img" aria-labelledby="weekly-title">
-            <title id="weekly-title">Horas estudadas por dia</title>
+        <div
+          class="chart-wrap"
+          aria-label="Gráfico de horas estudadas na semana"
+        >
+          <svg
+            viewBox="0 0 520 230"
+            role="img"
+            aria-labelledby="weekly-title"
+          >
+            <title id="weekly-title">
+              Horas estudadas por dia
+            </title>
+
             <defs>
-              <linearGradient id="chartFill" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="0%" stop-color="#14b8a6" stop-opacity="0.28" />
-                <stop offset="100%" stop-color="#14b8a6" stop-opacity="0" />
+              <linearGradient
+                id="chartFill"
+                x1="0"
+                x2="0"
+                y1="0"
+                y2="1"
+              >
+                <stop
+                  offset="0%"
+                  stop-color="#14b8a6"
+                  stop-opacity="0.28"
+                />
+
+                <stop
+                  offset="100%"
+                  stop-color="#14b8a6"
+                  stop-opacity="0"
+                />
               </linearGradient>
             </defs>
+
             <g class="grid-lines">
-              <line x1="44" x2="500" y1="36" y2="36" />
-              <line x1="44" x2="500" y1="82" y2="82" />
-              <line x1="44" x2="500" y1="128" y2="128" />
-              <line x1="44" x2="500" y1="174" y2="174" />
+              <line
+                x1="44"
+                x2="500"
+                y1="36"
+                y2="36"
+              />
+
+              <line
+                x1="44"
+                x2="500"
+                y1="82"
+                y2="82"
+              />
+
+              <line
+                x1="44"
+                x2="500"
+                y1="128"
+                y2="128"
+              />
+
+              <line
+                x1="44"
+                x2="500"
+                y1="174"
+                y2="174"
+              />
             </g>
+
             <g class="axis-labels">
-              <text x="10" y="40">8h</text>
-              <text x="10" y="86">6h</text>
-              <text x="10" y="132">4h</text>
-              <text x="10" y="178">2h</text>
-              <text x="10" y="214">0h</text>
+              <text
+                x="10"
+                y="40"
+              >
+                8h
+              </text>
+
+              <text
+                x="10"
+                y="86"
+              >
+                6h
+              </text>
+
+              <text
+                x="10"
+                y="132"
+              >
+                4h
+              </text>
+
+              <text
+                x="10"
+                y="178"
+              >
+                2h
+              </text>
+
+              <text
+                x="10"
+                y="214"
+              >
+                0h
+              </text>
             </g>
+
             <path
               class="chart-area"
               d="M74 178 C112 140, 126 150, 162 152 C202 154, 206 66, 250 66 C284 66, 286 80, 314 50 C340 90, 334 130, 378 140 C416 144, 416 72, 438 82 C466 96, 478 120, 500 132 L500 210 L74 210 Z"
             />
+
             <path
               class="chart-line"
               d="M74 178 C112 140, 126 150, 162 152 C202 154, 206 66, 250 66 C284 66, 286 80, 314 50 C340 90, 334 130, 378 140 C416 144, 416 72, 438 82 C466 96, 478 120, 500 132"
             />
+
             <g>
-              <circle v-for="point in weekData" :key="point.day" :cx="point.x * 4.44 + 47" :cy="point.y" r="4.5" />
+              <circle
+                v-for="point in weekData"
+                :key="point.day"
+                :cx="point.x * 4.44 + 47"
+                :cy="point.y"
+                r="4.5"
+              />
             </g>
+
             <g class="day-labels">
-              <text v-for="point in weekData" :key="`${point.day}-label`" :x="point.x * 4.44 + 42" y="222">
+              <text
+                v-for="point in weekData"
+                :key="`${point.day}-label`"
+                :x="point.x * 4.44 + 42"
+                y="222"
+              >
                 {{ point.day }}
               </text>
             </g>
           </svg>
         </div>
 
-        <p class="insight-note">Você está acima da sua média. Continue assim!</p>
+        <p class="insight-note">
+          Você está acima da sua média. Continue assim!
+        </p>
       </article>
 
       <article class="surface-card next-card">
@@ -155,18 +389,35 @@ const goalDays = [
         </div>
 
         <div class="step-list">
-          <RouterLink v-for="step in nextSteps" :key="step.title" to="/evolution" class="step-row">
-            <span class="tile-icon compact" :class="step.tone">{{ step.icon }}</span>
+          <RouterLink
+            v-for="step in nextSteps"
+            :key="step.title"
+            to="/evolution"
+            class="step-row"
+          >
+            <span
+              class="tile-icon compact"
+              :class="step.tone"
+            >
+              {{ step.icon }}
+            </span>
+
             <span>
               <strong>{{ step.title }}</strong>
               <small>{{ step.subtitle }}</small>
               <em>{{ step.time }}</em>
             </span>
-            <b>></b>
+
+            <b>&gt;</b>
           </RouterLink>
         </div>
 
-        <RouterLink to="/evolution" class="text-link">Ver agenda completa ></RouterLink>
+        <RouterLink
+          to="/evolution"
+          class="text-link"
+        >
+          Ver agenda completa &gt;
+        </RouterLink>
       </article>
 
       <aside class="focus-panel">
@@ -180,17 +431,34 @@ const goalDays = [
       <article class="surface-card focus-subjects">
         <div class="card-header">
           <h2>Disciplinas em foco</h2>
-          <RouterLink to="/abstracts">Ver todas</RouterLink>
+
+          <RouterLink to="/abstracts">
+            Ver todas
+          </RouterLink>
         </div>
 
         <div class="subject-list">
-          <div v-for="subject in subjects" :key="subject.name" class="subject-row">
-            <span class="tile-icon compact" :class="subject.tone">{{ subject.name.slice(0, 2).toUpperCase() }}</span>
+          <div
+            v-for="subject in subjects"
+            :key="subject.name"
+            class="subject-row"
+          >
+            <span
+              class="tile-icon compact"
+              :class="subject.tone"
+            >
+              {{ subject.name.slice(0, 2).toUpperCase() }}
+            </span>
+
             <div>
               <strong>{{ subject.name }}</strong>
               <small>{{ subject.detail }}</small>
             </div>
-            <span class="progress-line"><i :style="{ width: `${subject.progress}%` }" /></span>
+
+            <span class="progress-line">
+              <i :style="{ width: `${subject.progress}%` }" />
+            </span>
+
             <b>{{ subject.progress }}%</b>
           </div>
         </div>
@@ -199,16 +467,28 @@ const goalDays = [
       <article class="surface-card activity-card">
         <div class="card-header">
           <h2>Atividade recente</h2>
-          <RouterLink to="/dashboard">Ver todas</RouterLink>
+
+          <RouterLink to="/dashboard">
+            Ver todas
+          </RouterLink>
         </div>
 
         <div class="activity-list">
-          <div v-for="activity in activities" :key="activity.title" class="activity-row">
-            <span class="activity-dot" :class="activity.tone" />
+          <div
+            v-for="activity in activities"
+            :key="activity.title"
+            class="activity-row"
+          >
+            <span
+              class="activity-dot"
+              :class="activity.tone"
+            />
+
             <div>
               <strong>{{ activity.title }}</strong>
               <small>{{ activity.detail }}</small>
             </div>
+
             <time>{{ activity.time }}</time>
           </div>
         </div>
@@ -217,22 +497,33 @@ const goalDays = [
       <article class="surface-card goals-card">
         <div class="card-header">
           <h2>Metas desta semana</h2>
-          <button type="button">Editar</button>
+
+          <button type="button">
+            Editar
+          </button>
         </div>
 
         <div class="goal-content">
           <div class="goal-ring">
             <span>83%</span>
           </div>
+
           <div>
             <strong>Meta: 6 dias de estudo</strong>
             <p>5 de 6 dias concluídos</p>
-            <span class="progress-line wide"><i style="width: 83%" /></span>
+
+            <span class="progress-line wide">
+              <i style="width: 83%" />
+            </span>
           </div>
         </div>
 
         <div class="goal-days">
-          <span v-for="item in goalDays" :key="item.day" :class="{ done: item.done }">
+          <span
+            v-for="item in goalDays"
+            :key="item.day"
+            :class="{ done: item.done }"
+          >
             <i>{{ item.done ? '✓' : '' }}</i>
             <small>{{ item.day }}</small>
           </span>
@@ -255,14 +546,22 @@ const goalDays = [
   display: grid;
   gap: 1rem;
   background:
-    linear-gradient(180deg, rgba(248, 250, 252, 0.88), rgba(248, 250, 252, 0.76)),
+    linear-gradient(
+      180deg,
+      rgba(248, 250, 252, 0.88),
+      rgba(248, 250, 252, 0.76)
+    ),
     var(--home-bg-image) center / cover no-repeat;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.48);
 }
 
 :global(body.theme-dark) .home-dashboard {
   background:
-    linear-gradient(180deg, rgba(2, 31, 29, 0.92), rgba(1, 23, 21, 0.96)),
+    linear-gradient(
+      180deg,
+      rgba(2, 31, 29, 0.92),
+      rgba(1, 23, 21, 0.96)
+    ),
     var(--home-bg-image) center / cover no-repeat;
   box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.12);
 }
@@ -468,7 +767,10 @@ const goalDays = [
 
 .dashboard-main {
   display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.95fr) minmax(230px, 0.78fr);
+  grid-template-columns:
+    minmax(0, 1.55fr)
+    minmax(280px, 0.95fr)
+    minmax(230px, 0.78fr);
   gap: 0.9rem;
 }
 
@@ -653,8 +955,16 @@ const goalDays = [
   gap: 1.05rem;
   color: #f8fafc;
   background:
-    radial-gradient(circle at 26% 22%, rgba(45, 212, 191, 0.42), transparent 18%),
-    radial-gradient(circle at 100% 78%, rgba(6, 182, 212, 0.22), transparent 28%),
+    radial-gradient(
+      circle at 26% 22%,
+      rgba(45, 212, 191, 0.42),
+      transparent 18%
+    ),
+    radial-gradient(
+      circle at 100% 78%,
+      rgba(6, 182, 212, 0.22),
+      transparent 28%
+    ),
     linear-gradient(145deg, #064e49, #042f2e);
   box-shadow: var(--shadow-strong);
 }
@@ -682,12 +992,19 @@ const goalDays = [
 
 .lower-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(300px, 1.05fr);
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1fr)
+    minmax(300px, 1.05fr);
   gap: 0.9rem;
 }
 
 .subject-row {
-  grid-template-columns: auto minmax(0, 1fr) minmax(80px, 120px) 42px;
+  grid-template-columns:
+    auto
+    minmax(0, 1fr)
+    minmax(80px, 120px)
+    42px;
 }
 
 .progress-line.wide {
@@ -723,7 +1040,10 @@ const goalDays = [
   border-radius: 999px;
   display: grid;
   place-items: center;
-  background: conic-gradient(var(--bl-primary) 0 83%, var(--bl-border) 83% 100%);
+  background: conic-gradient(
+    var(--bl-primary) 0 83%,
+    var(--bl-border) 83% 100%
+  );
   position: relative;
 }
 
@@ -817,13 +1137,21 @@ const goalDays = [
     margin: -0.3rem;
     padding: 0.8rem;
     background:
-      linear-gradient(180deg, rgba(248, 250, 252, 0.92), rgba(248, 250, 252, 0.82)),
+      linear-gradient(
+        180deg,
+        rgba(248, 250, 252, 0.92),
+        rgba(248, 250, 252, 0.82)
+      ),
       var(--home-bg-image) center top / cover no-repeat;
   }
 
   :global(body.theme-dark) .home-dashboard {
     background:
-      linear-gradient(180deg, rgba(2, 31, 29, 0.94), rgba(1, 23, 21, 0.98)),
+      linear-gradient(
+        180deg,
+        rgba(2, 31, 29, 0.94),
+        rgba(1, 23, 21, 0.98)
+      ),
       var(--home-bg-image) center top / cover no-repeat;
   }
 
