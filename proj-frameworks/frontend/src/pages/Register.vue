@@ -194,7 +194,7 @@ async function handleRegister() {
   background-color: #eefcf9;
   background-position: center;
   background-size: cover;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .login-copy {
@@ -218,10 +218,15 @@ async function handleRegister() {
 }
 
 .brand-mark {
-  width: 3.35rem;
-  height: 3.35rem;
+  width: clamp(170px, 18vw, 220px);
+  height: auto;
+  max-height: 96px;
   display: block;
   object-fit: contain;
+}
+
+.login-brand span {
+  display: none;
 }
 
 .login-heading {
