@@ -1,15 +1,10 @@
 ﻿<script setup>
 import { computed } from 'vue';
 import { useAuthStore } from '@/store/auth';
+import focoImage from '@/assets/foco.png';
 
 const authStore = useAuthStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
-
-const metrics = [
-  { label: 'Resumos salvos', value: '120+' },
-  { label: 'Disciplinas mapeadas', value: '14' },
-  { label: 'Ritmo semanal', value: '5 dias' },
-];
 
 const highlights = [
   {
@@ -51,11 +46,8 @@ const steps = [
         </div>
       </div>
 
-      <div class="hero-metrics">
-        <article v-for="metric in metrics" :key="metric.label" class="metric-card">
-          <small>{{ metric.label }}</small>
-          <strong>{{ metric.value }}</strong>
-        </article>
+      <div class="hero-focus-card">
+        <img :src="focoImage" alt="Foco hoje, resultado sempre." />
       </div>
     </section>
 
@@ -93,30 +85,20 @@ const steps = [
   gap: 0.55rem;
 }
 
-.hero-metrics {
-  display: grid;
-  gap: 0.65rem;
-}
-
-.metric-card {
-  border: 1px solid var(--bl-border);
-  border-radius: var(--radius-md);
-  background: #ffffff;
-  padding: 0.85rem;
-}
-
-.metric-card small {
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--bl-muted);
-}
-
-.metric-card strong {
+.hero-focus-card {
+  width: 100%;
+  height: 100%;
+  min-height: 258px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
   display: block;
-  margin-top: 0.28rem;
-  font-family: 'Sora', sans-serif;
-  font-size: 1.45rem;
-  color: var(--bl-primary);
+}
+
+.hero-focus-card img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }
 
 .feature-card {
