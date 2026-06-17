@@ -188,7 +188,7 @@ async function handleLogin() {
   display: inline-flex;
   width: fit-content;
   align-items: center;
-  gap: 0.72rem;
+  gap: 0.82rem;
   color: #08756d;
   font-family: 'Sora', sans-serif;
   font-size: clamp(1.25rem, 2vw, 1.8rem);
@@ -196,8 +196,8 @@ async function handleLogin() {
 }
 
 .brand-mark {
-  width: 2.45rem;
-  height: 2.45rem;
+  width: 3.35rem;
+  height: 3.35rem;
   display: block;
   object-fit: contain;
 }

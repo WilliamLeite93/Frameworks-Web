@@ -16,7 +16,6 @@ const form = reactive({
   email: '',
   password: '',
   confirmPassword: '',
-  goal: 'Vestibular ENEM',
 });
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -27,7 +26,7 @@ async function handleRegister() {
     email: form.email.trim(),
     password: String(form.password ?? ''),
     confirmPassword: String(form.confirmPassword ?? ''),
-    goal: form.goal,
+    goal: 'Vestibular ENEM',
   };
 
   if (!payload.name || !payload.email || !payload.password) {
@@ -146,19 +145,6 @@ async function handleRegister() {
           </div>
         </div>
 
-        <div class="login-field">
-          <label for="goal">Objetivo</label>
-          <div class="input-shell select-shell">
-            <span aria-hidden="true">FO</span>
-            <select id="goal" v-model="form.goal">
-              <option value="Vestibular ENEM">Vestibular ENEM</option>
-              <option value="FUVEST">FUVEST</option>
-              <option value="UNICAMP">UNICAMP</option>
-              <option value="Vestibulares gerais">Vestibulares gerais</option>
-            </select>
-          </div>
-        </div>
-
         <div class="register-password-grid">
           <div class="login-field">
             <label for="password">Senha</label>
@@ -224,7 +210,7 @@ async function handleRegister() {
   display: inline-flex;
   width: fit-content;
   align-items: center;
-  gap: 0.72rem;
+  gap: 0.82rem;
   color: #08756d;
   font-family: 'Sora', sans-serif;
   font-size: clamp(1.25rem, 2vw, 1.8rem);
@@ -232,8 +218,8 @@ async function handleRegister() {
 }
 
 .brand-mark {
-  width: 2.45rem;
-  height: 2.45rem;
+  width: 3.35rem;
+  height: 3.35rem;
   display: block;
   object-fit: contain;
 }
@@ -463,8 +449,7 @@ async function handleRegister() {
   font-weight: 900;
 }
 
-.input-shell input,
-.input-shell select {
+.input-shell input {
   width: 100%;
   min-width: 0;
   border: 0;
@@ -649,15 +634,6 @@ async function handleRegister() {
   }
 }
 
-
-.input-shell select {
-  appearance: none;
-  cursor: pointer;
-}
-
-.select-shell {
-  grid-template-columns: auto 1fr;
-}
 
 .register-password-grid {
   display: grid;
