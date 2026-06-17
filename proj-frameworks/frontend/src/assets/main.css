@@ -43,20 +43,23 @@ body {
 }
 
 body.theme-dark {
-  --bl-bg: #020617;
-  --bl-surface: #0f172a;
-  --bl-text: #e2e8f0;
-  --bl-muted: #94a3b8;
-  --bl-border: #1f2937;
-  --bl-info-soft: rgba(14, 165, 233, 0.2);
-  --bl-primary-soft: rgba(45, 212, 191, 0.2);
+  --bl-primary: #14b8a6;
+  --bl-primary-strong: #0f766e;
+  --bl-secondary: #2dd4bf;
+  --bl-bg: #021f1d;
+  --bl-surface: #062b28;
+  --bl-text: #5eead4;
+  --bl-muted: #9ab7b0;
+  --bl-border: #12443f;
+  --bl-info-soft: rgba(20, 184, 166, 0.18);
+  --bl-primary-soft: rgba(20, 184, 166, 0.2);
   --bl-accent-soft: rgba(245, 158, 11, 0.2);
-  --shadow-soft: 0 18px 34px rgba(2, 6, 23, 0.5);
-  --shadow-strong: 0 30px 48px rgba(2, 6, 23, 0.6);
+  --shadow-soft: 0 18px 34px rgba(1, 15, 14, 0.5);
+  --shadow-strong: 0 30px 48px rgba(1, 15, 14, 0.6);
   background:
-    radial-gradient(circle at 10% -5%, rgba(6, 182, 212, 0.12), transparent 34%),
-    radial-gradient(circle at 90% -10%, rgba(15, 118, 110, 0.14), transparent 36%),
-    linear-gradient(180deg, #020617 0%, #0b1120 45%, #111827 100%);
+    radial-gradient(circle at 10% -5%, rgba(20, 184, 166, 0.18), transparent 34%),
+    radial-gradient(circle at 90% -10%, rgba(15, 118, 110, 0.24), transparent 36%),
+    linear-gradient(180deg, #021f1d 0%, #032b27 46%, #011715 100%);
 }
 
 h1,
@@ -121,7 +124,7 @@ textarea {
 }
 
 body.theme-dark .app-sidebar {
-  background: rgba(15, 23, 42, 0.88);
+  background: rgba(3, 31, 28, 0.92);
 }
 
 .sidebar-header {
@@ -233,6 +236,12 @@ body.theme-dark .sidebar-notice {
 
 .app-content {
   min-width: 0;
+}
+
+body.theme-dark .app-content {
+  background:
+    radial-gradient(circle at 85% 8%, rgba(20, 184, 166, 0.12), transparent 28%),
+    linear-gradient(180deg, #021f1d 0%, #032b27 48%, #011715 100%);
 }
 
 .content-main {
@@ -430,8 +439,8 @@ body.theme-dark .actions strong {
 
 body.theme-dark .hero-card {
   background:
-    radial-gradient(circle at 100% 0%, rgba(6, 182, 212, 0.2), transparent 36%),
-    linear-gradient(145deg, rgba(20, 30, 48, 0.95), rgba(15, 23, 42, 0.96));
+    radial-gradient(circle at 100% 0%, rgba(20, 184, 166, 0.22), transparent 36%),
+    linear-gradient(145deg, rgba(5, 54, 49, 0.96), rgba(3, 31, 28, 0.98));
 }
 
 .list-reset {

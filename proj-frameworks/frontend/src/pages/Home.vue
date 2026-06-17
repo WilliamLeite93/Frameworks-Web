@@ -251,7 +251,7 @@ const goalDays = [
 
 :global(body.theme-dark) .home-dashboard {
   background:
-    linear-gradient(180deg, rgba(2, 6, 23, 0.78), rgba(15, 23, 42, 0.86)),
+    linear-gradient(180deg, rgba(2, 31, 29, 0.92), rgba(1, 23, 21, 0.96)),
     var(--home-bg-image) center / cover no-repeat;
   box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.12);
 }
@@ -791,7 +791,7 @@ const goalDays = [
 
   :global(body.theme-dark) .home-dashboard {
     background:
-      linear-gradient(180deg, rgba(2, 6, 23, 0.82), rgba(15, 23, 42, 0.9)),
+      linear-gradient(180deg, rgba(2, 31, 29, 0.94), rgba(1, 23, 21, 0.98)),
       var(--home-bg-image) center top / cover no-repeat;
   }
 

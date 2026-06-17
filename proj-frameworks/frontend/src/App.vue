@@ -307,7 +307,7 @@ onUnmounted(() => {
 }
 
 :global(body.theme-dark) .sidebar-user {
-  background: rgba(15, 23, 42, 0.72);
+  background: rgba(5, 54, 49, 0.72);
 }
 
 .sidebar-user small {
@@ -332,7 +332,7 @@ onUnmounted(() => {
 }
 
 :global(body.theme-dark) .todo-panel {
-  background: rgba(15, 23, 42, 0.72);
+  background: rgba(5, 54, 49, 0.72);
 }
 
 .todo-panel h3 {
@@ -385,7 +385,7 @@ onUnmounted(() => {
 }
 
 :global(body.theme-dark) .todo-list li {
-  background: rgba(2, 6, 23, 0.3);
+  background: rgba(1, 23, 21, 0.38);
 }
 
 .todo-list li.done span {
@@ -428,9 +428,9 @@ onUnmounted(() => {
 }
 
 :global(body.theme-dark) .todo-remove:hover {
-  color: #fca5a5;
-  border-color: rgba(248, 113, 113, 0.42);
-  background: rgba(127, 29, 29, 0.24);
+  color: #5eead4;
+  border-color: rgba(45, 212, 191, 0.42);
+  background: rgba(20, 184, 166, 0.16);
 }
 
 .todo-empty {

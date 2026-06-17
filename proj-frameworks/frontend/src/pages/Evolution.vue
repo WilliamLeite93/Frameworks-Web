@@ -307,10 +307,10 @@ onMounted(loadSummaries);
 
 :global(body.theme-dark) .evolution-hero {
   background:
-    linear-gradient(90deg, rgba(15, 23, 42, 0.98) 0%, rgba(15, 23, 42, 0.9) 48%, rgba(15, 23, 42, 0.24) 76%),
+    linear-gradient(90deg, rgba(5, 54, 49, 0.98) 0%, rgba(5, 54, 49, 0.9) 48%, rgba(5, 54, 49, 0.24) 76%),
     var(--hero-bg-image) center / cover no-repeat,
     radial-gradient(circle at 100% 0%, rgba(45, 212, 191, 0.18), transparent 34%),
-    linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.94));
+    linear-gradient(145deg, rgba(5, 54, 49, 0.98), rgba(1, 23, 21, 0.96));
 }
 
 .evolution-hero h1 {
@@ -583,7 +583,7 @@ onMounted(loadSummaries);
 }
 
 :global(body.theme-dark) .level-0 {
-  background: #1e293b;
+  background: #12443f;
 }
 
 .level-1 {
@@ -718,10 +718,10 @@ onMounted(loadSummaries);
 
   :global(body.theme-dark) .evolution-hero {
     background:
-      linear-gradient(180deg, rgba(15, 23, 42, 0.98) 0%, rgba(15, 23, 42, 0.9) 60%, rgba(15, 23, 42, 0.28) 100%),
+      linear-gradient(180deg, rgba(5, 54, 49, 0.98) 0%, rgba(5, 54, 49, 0.9) 60%, rgba(5, 54, 49, 0.28) 100%),
       var(--hero-bg-image) center / cover no-repeat,
       radial-gradient(circle at 100% 0%, rgba(45, 212, 191, 0.18), transparent 34%),
-      linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.94));
+      linear-gradient(145deg, rgba(5, 54, 49, 0.98), rgba(1, 23, 21, 0.96));
   }
 
   .evolution-stats,

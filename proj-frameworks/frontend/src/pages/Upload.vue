@@ -239,7 +239,7 @@ async function handleSubmit() {
 :global(body.theme-dark) .upload-hero {
   background:
     radial-gradient(circle at 100% 0%, rgba(45, 212, 191, 0.18), transparent 34%),
-    linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.94));
+    linear-gradient(145deg, rgba(5, 54, 49, 0.98), rgba(1, 23, 21, 0.96));
 }
 
 .upload-hero h1 {
@@ -438,7 +438,7 @@ form .btn {
   border-color: rgba(45, 212, 191, 0.42);
   background:
     radial-gradient(circle at 50% 8%, rgba(45, 212, 191, 0.18), transparent 34%),
-    rgba(15, 23, 42, 0.72);
+    rgba(5, 54, 49, 0.72);
 }
 
 .drop-zone.dragging,
@@ -573,9 +573,9 @@ form .btn {
 }
 
 :global(body.theme-dark) .file-list button:hover {
-  color: #fca5a5;
-  border-color: rgba(248, 113, 113, 0.42);
-  background: rgba(127, 29, 29, 0.24);
+  color: #5eead4;
+  border-color: rgba(45, 212, 191, 0.42);
+  background: rgba(20, 184, 166, 0.16);
 }
 
 .empty-files {

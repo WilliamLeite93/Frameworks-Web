@@ -208,7 +208,7 @@ onMounted(loadSummaries);
 :global(body.theme-dark) .library-hero {
   background:
     radial-gradient(circle at 100% 0%, rgba(45, 212, 191, 0.18), transparent 34%),
-    linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.94));
+    linear-gradient(145deg, rgba(5, 54, 49, 0.98), rgba(1, 23, 21, 0.96));
 }
 
 :global(body.theme-dark) .library-hero .badge-info {
@@ -251,7 +251,7 @@ onMounted(loadSummaries);
 }
 
 :global(body.theme-dark) .stat-card {
-  background: rgba(15, 23, 42, 0.72);
+  background: rgba(5, 54, 49, 0.72);
 }
 
 .stat-icon,
@@ -416,7 +416,7 @@ onMounted(loadSummaries);
 }
 
 :global(body.theme-dark) .file-action {
-  background: rgba(15, 23, 42, 0.72);
+  background: rgba(5, 54, 49, 0.72);
 }
 
 .file-action:hover {
