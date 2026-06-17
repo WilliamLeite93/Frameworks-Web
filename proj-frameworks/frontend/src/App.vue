@@ -14,6 +14,8 @@ const TODO_LIST_KEY = 'brainlog_sidebar_todos';
 
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 const userName = computed(() => authStore.userName);
+const authRouteNames = ['Login', 'Register', 'ForgotPassword', 'ResetPassword'];
+const isAuthRoute = computed(() => authRouteNames.includes(route.name));
 
 const isSidebarCollapsed = ref(false);
 const isDarkMode = ref(false);
@@ -155,8 +157,8 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="app-shell" :class="{ collapsed: isSidebarCollapsed }">
-    <aside class="app-sidebar">
+  <div class="app-shell" :class="{ collapsed: isSidebarCollapsed, 'auth-shell': isAuthRoute }">
+    <aside v-if="!isAuthRoute" class="app-sidebar">
       <div class="sidebar-header">
         <button
           type="button"
@@ -281,8 +283,8 @@ onUnmounted(() => {
     </aside>
 
     <div class="app-content">
-      <main class="content-main">
-        <div class="container">
+      <main class="content-main" :class="{ 'auth-main': isAuthRoute }">
+        <div :class="isAuthRoute ? 'auth-container' : 'container'">
           <RouterView />
         </div>
       </main>
@@ -297,6 +299,20 @@ onUnmounted(() => {
   object-fit: contain;
   object-position: left center;
   display: block;
+}
+
+:global(.app-shell.auth-shell) {
+  grid-template-columns: 1fr;
+}
+
+.auth-main {
+  min-height: 100vh;
+  padding: 0;
+}
+
+.auth-container {
+  width: 100%;
+  min-height: 100vh;
 }
 
 .sidebar-user {
