@@ -1,148 +1,301 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useAuthStore } from '@/store/auth';
+import { getSummariesByOwner } from '@/services/summaryService';
 import bgHomeImage from '@/assets/bg-home.png';
 import calendarioImage from '@/assets/calendario.png';
 import despertadorImage from '@/assets/despertador.png';
 import disciplinaImage from '@/assets/disciplina.png';
+import focoImage from '@/assets/foco.png';
 import livrosImage from '@/assets/livros.png';
 import ritmoImage from '@/assets/ritmo.png';
 
 const authStore = useAuthStore();
-const userName = computed(() => authStore.userName || 'Gabriel');
+const userName = computed(() => authStore.userName || 'Estudante');
+const summaries = ref([]);
+const loading = ref(false);
+const showNotifications = ref(false);
 
-const stats = [
+const weekLabels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+const tones = ['blue', 'violet', 'amber', 'mint', 'rose'];
+const weekDaysTotal = 7;
+
+const weekStart = computed(() => getWeekStart(new Date()));
+const weekSummaries = computed(() => summaries.value.filter((item) => new Date(item.createdAt).getTime() >= weekStart.value.getTime()));
+const todaySummaries = computed(() => summaries.value.filter((item) => isSameDay(new Date(item.createdAt), new Date())));
+const totalFiles = computed(() => summaries.value.reduce((total, item) => total + (item.files?.length || 0), 0));
+const weekFileCount = computed(() => weekSummaries.value.reduce((total, item) => total + (item.files?.length || 0), 0));
+const uniqueSubjects = computed(() => new Set(summaries.value.map((item) => item.subject).filter(Boolean)));
+const activeWeekDays = computed(() => new Set(weekSummaries.value.map((item) => new Date(item.createdAt).toDateString())));
+const weeklyProgress = computed(() => Math.round((activeWeekDays.value.size / weekDaysTotal) * 100));
+const dueReminders = computed(() => {
+  const now = Date.now();
+  return summaries.value.filter((item) => item.reviewReminderAt && new Date(item.reviewReminderAt).getTime() <= now);
+});
+const pendingReviews = computed(() => summaries.value.filter((item) => item.status !== 'Revisado'));
+const notificationCount = computed(() => new Set([...dueReminders.value, ...pendingReviews.value].map((item) => item.id)).size);
+const notifications = computed(() => {
+  const seen = new Set();
+  const items = [];
+
+  dueReminders.value.forEach((summary) => {
+    seen.add(summary.id);
+    items.push({
+      id: `reminder-${summary.id}`,
+      title: 'Revisão agendada',
+      detail: summary.title,
+      meta: summary.subject,
+      to: `/abstracts/${summary.id}`,
+      tone: 'amber',
+    });
+  });
+
+  pendingReviews.value.forEach((summary) => {
+    if (seen.has(summary.id)) return;
+    items.push({
+      id: `pending-${summary.id}`,
+      title: 'Resumo pendente',
+      detail: summary.title,
+      meta: summary.status || 'Novo',
+      to: `/abstracts/${summary.id}`,
+      tone: 'mint',
+    });
+  });
+
+  return items.slice(0, 5);
+});
+
+const streakDays = computed(() => {
+  const activeDays = new Set(summaries.value.map((item) => new Date(item.createdAt).toDateString()));
+  const cursor = new Date();
+  let streak = 0;
+
+  while (activeDays.has(cursor.toDateString())) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  return streak;
+});
+
+const stats = computed(() => [
   {
     label: 'Resumos salvos',
-    value: '120+',
-    detail: '26 esta semana',
+    value: String(summaries.value.length),
+    detail: `${weekSummaries.value.length} ${weekSummaries.value.length === 1 ? 'esta semana' : 'esta semana'}`,
     tone: 'mint',
     icon: 'RS',
     image: livrosImage,
   },
   {
     label: 'Disciplinas',
-    value: '14',
-    detail: '2 ativas hoje',
+    value: String(uniqueSubjects.value.size),
+    detail: `${todaySummaries.value.length} ${todaySummaries.value.length === 1 ? 'resumo hoje' : 'resumos hoje'}`,
     tone: 'violet',
     icon: 'DI',
     image: disciplinaImage,
   },
   {
-    label: 'Horas estudadas',
-    value: '32h',
-    detail: '+5h vs semana passada',
+    label: 'Anexos enviados',
+    value: String(totalFiles.value),
+    detail: `${weekFileCount.value} ${weekFileCount.value === 1 ? 'novo esta semana' : 'novos esta semana'}`,
     tone: 'amber',
-    icon: 'HE',
+    icon: 'AN',
     image: despertadorImage,
   },
   {
     label: 'Ritmo semanal',
-    value: '5 dias',
-    detail: 'Meta: 6 dias',
+    value: `${activeWeekDays.value.size} ${activeWeekDays.value.size === 1 ? 'dia' : 'dias'}`,
+    detail: 'Semana atual',
     tone: 'blue',
     icon: 'RW',
     image: ritmoImage,
+    progress: weeklyProgress.value,
   },
-];
+]);
 
-const weekData = [
-  { day: 'Seg', hours: 1.4, x: 6, y: 78 },
-  { day: 'Ter', hours: 2.4, x: 22, y: 66 },
-  { day: 'Qua', hours: 5.8, x: 43, y: 36 },
-  { day: 'Qui', hours: 7.2, x: 54, y: 25 },
-  { day: 'Sex', hours: 3.3, x: 70, y: 58 },
-  { day: 'Sab', hours: 6.1, x: 82, y: 36 },
-  { day: 'Dom', hours: 3.8, x: 96, y: 55 },
-];
+const summariesBySubject = computed(() => {
+  const grouped = new Map();
 
-const nextSteps = [
-  {
-    title: 'Revisar Matemática',
-    subtitle: 'Funções e equações',
-    time: 'Hoje - 19:00',
-    tone: 'mint',
-    icon: 'MA',
-  },
-  {
-    title: 'Revisar Resumo',
-    subtitle: 'História do Brasil',
-    time: 'Amanhã - 10:00',
-    tone: 'violet',
-    icon: 'HI',
-  },
-  {
-    title: 'Questões',
-    subtitle: 'Física - Mecânica',
-    time: 'Amanhã - 14:00',
-    tone: 'amber',
-    icon: 'FI',
-  },
-];
+  summaries.value.forEach((summary) => {
+    const subject = summary.subject || 'Sem matéria';
+    const current = grouped.get(subject) || { name: subject, summaries: 0, files: 0 };
+    current.summaries += 1;
+    current.files += summary.files?.length || 0;
+    grouped.set(subject, current);
+  });
 
-const subjects = [
-  {
-    name: 'Matemática',
-    detail: '6 resumos - 4h estudadas',
-    progress: 75,
-    tone: 'blue',
-  },
-  {
-    name: 'Física',
-    detail: '4 resumos - 3h estudadas',
-    progress: 60,
-    tone: 'violet',
-  },
-  {
-    name: 'História',
-    detail: '3 resumos - 2h estudadas',
-    progress: 40,
-    tone: 'amber',
-  },
-  {
-    name: 'Biologia',
-    detail: '2 resumos - 1h estudada',
-    progress: 25,
-    tone: 'mint',
-  },
-];
+  return [...grouped.values()].sort((a, b) => b.summaries - a.summaries);
+});
 
-const activities = [
-  {
-    title: 'Resumo salvo',
-    detail: 'Funções do 1º grau - Matemática',
-    time: 'Há 2h',
-    tone: 'mint',
-  },
-  {
-    title: 'Arquivo enviado',
-    detail: 'Apostila Física - Mecânica.pdf',
-    time: 'Há 4h',
-    tone: 'rose',
-  },
-  {
-    title: 'Questões concluídas',
-    detail: '20 questões de Física',
-    time: 'Há 6h',
-    tone: 'violet',
-  },
-  {
-    title: 'Meta semanal atualizada',
-    detail: 'Estudar 6 dias por semana',
-    time: 'Há 1d',
-    tone: 'mint',
-  },
-];
+const subjects = computed(() => {
+  const max = Math.max(1, ...summariesBySubject.value.map((item) => item.summaries));
 
-const goalDays = [
-  { day: 'Seg', done: true },
-  { day: 'Ter', done: true },
-  { day: 'Qua', done: true },
-  { day: 'Qui', done: true },
-  { day: 'Sex', done: true },
-  { day: 'Sáb', done: false },
-  { day: 'Dom', done: false },
-];
+  return summariesBySubject.value.slice(0, 4).map((subject, index) => ({
+    name: subject.name,
+    detail: `${subject.summaries} ${subject.summaries === 1 ? 'resumo' : 'resumos'} - ${subject.files} ${subject.files === 1 ? 'anexo' : 'anexos'}`,
+    progress: Math.round((subject.summaries / max) * 100),
+    tone: tones[index % tones.length],
+  }));
+});
+
+const weekData = computed(() => {
+  const start = new Date(weekStart.value);
+  const maxCount = Math.max(4, ...weekLabels.map((_, index) => countSummariesOn(addDays(start, index))));
+
+  return weekLabels.map((day, index) => {
+    const count = countSummariesOn(addDays(start, index));
+    const x = 74 + index * 71;
+    const y = 210 - (count / maxCount) * 174;
+
+    return { day, count, x, y: Math.max(36, y) };
+  });
+});
+
+const chartPoints = computed(() => weekData.value.map((point) => `${point.x},${point.y}`).join(' '));
+const chartAreaPoints = computed(() => {
+  const first = weekData.value[0];
+  const last = weekData.value[weekData.value.length - 1];
+  if (!first || !last) return '';
+  return `${first.x},210 ${chartPoints.value} ${last.x},210`;
+});
+const chartScale = computed(() => {
+  const maxCount = Math.max(4, ...weekData.value.map((item) => item.count));
+  return [maxCount, Math.round(maxCount * 0.75), Math.round(maxCount * 0.5), Math.max(1, Math.round(maxCount * 0.25)), 0];
+});
+
+const nextSteps = computed(() => {
+  return [...summaries.value]
+    .filter((item) => item.status !== 'Revisado')
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 3)
+    .map((summary, index) => ({
+      title: `Revisar ${summary.subject || 'resumo'}`,
+      subtitle: summary.title,
+      time: summary.status || 'Novo',
+      tone: tones[index % tones.length],
+      icon: initials(summary.subject),
+    }));
+});
+
+const activities = computed(() => {
+  const items = [];
+
+  summaries.value.forEach((summary) => {
+    items.push({
+      id: `summary-${summary.id}`,
+      title: 'Resumo salvo',
+      detail: `${summary.title} - ${summary.subject}`,
+      time: relativeTime(summary.createdAt),
+      tone: 'mint',
+      date: summary.createdAt,
+    });
+
+    summary.files?.forEach((file) => {
+      items.push({
+        id: `file-${summary.id}-${file.id || file.fileName}`,
+        title: 'Arquivo enviado',
+        detail: file.fileName,
+        time: relativeTime(summary.createdAt),
+        tone: 'blue',
+        date: summary.createdAt,
+      });
+    });
+
+    if (summary.status === 'Revisado') {
+      items.push({
+        id: `reviewed-${summary.id}`,
+        title: 'Resumo revisado',
+        detail: `${summary.title} - ${summary.subject}`,
+        time: relativeTime(summary.createdAt),
+        tone: 'amber',
+        date: summary.createdAt,
+      });
+    }
+  });
+
+  return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 4);
+});
+
+const goalDays = computed(() => {
+  const start = new Date(weekStart.value);
+
+  return weekLabels.map((day, index) => ({
+    day,
+    done: activeWeekDays.value.has(addDays(start, index).toDateString()),
+  }));
+});
+
+const weeklyInsight = computed(() => {
+  if (!summaries.value.length) return 'Nenhum resumo registrado ainda.';
+  if (!weekSummaries.value.length) return 'Nenhum resumo novo nesta semana.';
+  return `${weekSummaries.value.length} ${weekSummaries.value.length === 1 ? 'resumo registrado' : 'resumos registrados'} nesta semana.`;
+});
+
+function getWeekStart(date) {
+  const start = new Date(date);
+  const day = start.getDay() || 7;
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - day + 1);
+  return start;
+}
+
+function addDays(date, amount) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + amount);
+  return next;
+}
+
+function isSameDay(left, right) {
+  return left.toDateString() === right.toDateString();
+}
+
+function countSummariesOn(date) {
+  return summaries.value.filter((item) => isSameDay(new Date(item.createdAt), date)).length;
+}
+
+function initials(value) {
+  return String(value || 'BL')
+    .split(' ')
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+function relativeTime(date) {
+  const timestamp = new Date(date).getTime();
+  if (!timestamp) return 'Agora';
+
+  const diff = Date.now() - timestamp;
+  const minutes = Math.max(1, Math.floor(diff / 60000));
+  if (minutes < 60) return `Há ${minutes}min`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `Há ${hours}h`;
+
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `Há ${days}d`;
+
+  return new Date(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+}
+
+async function loadHomeData() {
+  if (!authStore.user?.id) {
+    summaries.value = [];
+    return;
+  }
+
+  loading.value = true;
+  try {
+    summaries.value = await getSummariesByOwner(authStore.user.id);
+  } finally {
+    loading.value = false;
+  }
+}
+
+onMounted(loadHomeData);
+watch(() => authStore.user?.id, loadHomeData);
 </script>
 
 <template>
@@ -152,7 +305,7 @@ const goalDays = [
   >
     <header class="home-topbar">
       <div>
-        <h1>Bom dia, {{ userName }}!</h1>
+        <h1>Bom dia, <span>{{ userName }}!</span></h1>
         <p>Pronto para mais um dia de foco e conquistas?</p>
       </div>
 
@@ -165,28 +318,79 @@ const goalDays = [
               aria-hidden="true"
             />
 
-            <span class="fallback-text">7</span>
+            <span class="fallback-text">{{ streakDays }}</span>
           </span>
 
           <div>
-            <strong>7 dias</strong>
+            <strong>{{ streakDays }} {{ streakDays === 1 ? 'dia' : 'dias' }}</strong>
             <small>Sequência atual</small>
           </div>
         </div>
 
-        <button
-          type="button"
-          class="icon-button"
-          aria-label="Notificações"
-        >
-          3
-        </button>
+        <div class="notification-wrap">
+          <button
+            type="button"
+            class="icon-button notification-button"
+            :aria-label="`${notificationCount} notificações de revisão`"
+            :aria-expanded="showNotifications"
+            @click="showNotifications = !showNotifications"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+              />
+              <path
+                d="M10 21h4"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-width="2"
+              />
+            </svg>
+            <span v-if="notificationCount" class="notification-badge">{{ notificationCount }}</span>
+          </button>
+
+          <div v-if="showNotifications" class="notification-menu">
+            <header>
+              <strong>Notificações</strong>
+              <small>{{ notificationCount }} {{ notificationCount === 1 ? 'item' : 'itens' }}</small>
+            </header>
+
+            <div v-if="notifications.length" class="notification-list">
+              <RouterLink
+                v-for="notification in notifications"
+                :key="notification.id"
+                :to="notification.to"
+                class="notification-item"
+                @click="showNotifications = false"
+              >
+                <span :class="notification.tone">{{ notification.title.slice(0, 2).toUpperCase() }}</span>
+                <div>
+                  <strong>{{ notification.title }}</strong>
+                  <small>{{ notification.detail }}</small>
+                  <em>{{ notification.meta }}</em>
+                </div>
+              </RouterLink>
+            </div>
+
+            <p v-else class="notification-empty">Nenhuma notificação no momento.</p>
+
+            <RouterLink to="/abstracts" class="notification-footer" @click="showNotifications = false">
+              Ver biblioteca
+            </RouterLink>
+          </div>
+        </div>
 
         <RouterLink
           to="/upload"
           class="btn btn-primary"
         >
-          + Nova tarefa
+          + Novo resumo
         </RouterLink>
       </div>
     </header>
@@ -224,7 +428,7 @@ const goalDays = [
             v-if="stat.label === 'Ritmo semanal'"
             class="mini-progress"
           >
-            <i />
+            <i :style="{ width: `${stat.progress}%` }" />
           </span>
         </div>
       </article>
@@ -245,7 +449,7 @@ const goalDays = [
 
         <div
           class="chart-wrap"
-          aria-label="Gráfico de horas estudadas na semana"
+          aria-label="Gráfico de resumos enviados na semana"
         >
           <svg
             viewBox="0 0 520 230"
@@ -253,7 +457,7 @@ const goalDays = [
             aria-labelledby="weekly-title"
           >
             <title id="weekly-title">
-              Horas estudadas por dia
+              Resumos enviados por dia
             </title>
 
             <defs>
@@ -313,53 +517,53 @@ const goalDays = [
                 x="10"
                 y="40"
               >
-                8h
+                {{ chartScale[0] }}
               </text>
 
               <text
                 x="10"
                 y="86"
               >
-                6h
+                {{ chartScale[1] }}
               </text>
 
               <text
                 x="10"
                 y="132"
               >
-                4h
+                {{ chartScale[2] }}
               </text>
 
               <text
                 x="10"
                 y="178"
               >
-                2h
+                {{ chartScale[3] }}
               </text>
 
               <text
                 x="10"
                 y="214"
               >
-                0h
+                0
               </text>
             </g>
 
-            <path
+            <polygon
               class="chart-area"
-              d="M74 178 C112 140, 126 150, 162 152 C202 154, 206 66, 250 66 C284 66, 286 80, 314 50 C340 90, 334 130, 378 140 C416 144, 416 72, 438 82 C466 96, 478 120, 500 132 L500 210 L74 210 Z"
+              :points="chartAreaPoints"
             />
 
-            <path
+            <polyline
               class="chart-line"
-              d="M74 178 C112 140, 126 150, 162 152 C202 154, 206 66, 250 66 C284 66, 286 80, 314 50 C340 90, 334 130, 378 140 C416 144, 416 72, 438 82 C466 96, 478 120, 500 132"
+              :points="chartPoints"
             />
 
             <g>
               <circle
                 v-for="point in weekData"
                 :key="point.day"
-                :cx="point.x * 4.44 + 47"
+                :cx="point.x"
                 :cy="point.y"
                 r="4.5"
               />
@@ -369,7 +573,7 @@ const goalDays = [
               <text
                 v-for="point in weekData"
                 :key="`${point.day}-label`"
-                :x="point.x * 4.44 + 42"
+                :x="point.x - 8"
                 y="222"
               >
                 {{ point.day }}
@@ -379,7 +583,7 @@ const goalDays = [
         </div>
 
         <p class="insight-note">
-          Você está acima da sua média. Continue assim!
+          {{ weeklyInsight }}
         </p>
       </article>
 
@@ -388,11 +592,11 @@ const goalDays = [
           <h2>Próximos passos</h2>
         </div>
 
-        <div class="step-list">
+        <div v-if="nextSteps.length" class="step-list">
           <RouterLink
             v-for="step in nextSteps"
-            :key="step.title"
-            to="/evolution"
+            :key="`${step.title}-${step.subtitle}`"
+            to="/abstracts"
             class="step-row"
           >
             <span
@@ -412,18 +616,18 @@ const goalDays = [
           </RouterLink>
         </div>
 
+        <p v-else class="dashboard-empty">Nenhum resumo pendente de revisão.</p>
+
         <RouterLink
           to="/evolution"
           class="text-link"
         >
-          Ver agenda completa &gt;
+          Ver evolução completa &gt;
         </RouterLink>
       </article>
 
       <aside class="focus-panel">
-        <span>FO</span>
-        <h2>Foco hoje, resultado sempre.</h2>
-        <p>Disciplina é o que transforma planos em conquistas.</p>
+        <img :src="focoImage" alt="Foco hoje, resultado sempre." />
       </aside>
     </section>
 
@@ -437,7 +641,7 @@ const goalDays = [
           </RouterLink>
         </div>
 
-        <div class="subject-list">
+        <div v-if="subjects.length" class="subject-list">
           <div
             v-for="subject in subjects"
             :key="subject.name"
@@ -462,21 +666,23 @@ const goalDays = [
             <b>{{ subject.progress }}%</b>
           </div>
         </div>
+
+        <p v-else class="dashboard-empty">Nenhuma disciplina registrada ainda.</p>
       </article>
 
       <article class="surface-card activity-card">
         <div class="card-header">
           <h2>Atividade recente</h2>
 
-          <RouterLink to="/dashboard">
+          <RouterLink to="/abstracts">
             Ver todas
           </RouterLink>
         </div>
 
-        <div class="activity-list">
+        <div v-if="activities.length" class="activity-list">
           <div
             v-for="activity in activities"
-            :key="activity.title"
+            :key="activity.id"
             class="activity-row"
           >
             <span
@@ -492,28 +698,30 @@ const goalDays = [
             <time>{{ activity.time }}</time>
           </div>
         </div>
+
+        <p v-else class="dashboard-empty">Nenhuma atividade real registrada ainda.</p>
       </article>
 
       <article class="surface-card goals-card">
         <div class="card-header">
-          <h2>Metas desta semana</h2>
+          <h2>Registro da semana</h2>
 
-          <button type="button">
-            Editar
-          </button>
+          <RouterLink to="/upload">
+            Adicionar
+          </RouterLink>
         </div>
 
         <div class="goal-content">
-          <div class="goal-ring">
-            <span>83%</span>
+          <div class="goal-ring" :style="{ '--goal-progress': `${weeklyProgress}%` }">
+            <span>{{ weeklyProgress }}%</span>
           </div>
 
           <div>
-            <strong>Meta: 6 dias de estudo</strong>
-            <p>5 de 6 dias concluídos</p>
+            <strong>Dias com uploads</strong>
+            <p>{{ activeWeekDays.size }} de {{ weekDaysTotal }} dias com resumos</p>
 
             <span class="progress-line wide">
-              <i style="width: 83%" />
+              <i :style="{ width: `${weeklyProgress}%` }" />
             </span>
           </div>
         </div>
@@ -563,7 +771,7 @@ const goalDays = [
       rgba(1, 23, 21, 0.96)
     ),
     var(--home-bg-image) center / cover no-repeat;
-  box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.12);
+  box-shadow: none;
 }
 
 .home-topbar {
@@ -576,6 +784,14 @@ const goalDays = [
 .home-topbar h1 {
   font-size: clamp(1.75rem, 3vw, 2.45rem);
   line-height: 1.1;
+}
+
+:global(body.theme-dark) .home-topbar h1 {
+  color: #f8fafc;
+}
+
+:global(body.theme-dark) .home-topbar h1 span {
+  color: var(--bl-primary);
 }
 
 .home-topbar p {
@@ -623,7 +839,8 @@ const goalDays = [
 }
 
 :global(body.theme-dark) .streak-mark {
-  color: #fcd34d;
+  background: rgba(245, 158, 11, 0.14);
+  color: #fbbf24;
 }
 
 .streak-pill strong,
@@ -640,12 +857,170 @@ const goalDays = [
   width: 2.8rem;
   height: 2.8rem;
   border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--bl-primary);
   font-weight: 900;
 }
 
+.notification-wrap {
+  position: relative;
+}
+
+.notification-button {
+  position: relative;
+  cursor: pointer;
+}
+
+.notification-button svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -0.32rem;
+  right: -0.32rem;
+  min-width: 1.18rem;
+  height: 1.18rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  padding: 0 0.28rem;
+  background: var(--bl-primary);
+  color: #ffffff;
+  font-size: 0.68rem;
+  line-height: 1;
+  box-shadow: 0 0 0 3px var(--bl-surface);
+}
+
+.notification-menu {
+  position: absolute;
+  top: calc(100% + 0.7rem);
+  right: 0;
+  z-index: 20;
+  width: min(340px, calc(100vw - 2rem));
+  border: 1px solid var(--bl-border);
+  border-radius: var(--radius-md);
+  background: var(--bl-surface);
+  box-shadow: var(--shadow-strong);
+  padding: 0.78rem;
+}
+
+.notification-menu header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.notification-menu header strong {
+  font-size: 0.96rem;
+}
+
+.notification-menu header small,
+.notification-item small,
+.notification-item em,
+.notification-empty {
+  color: var(--bl-muted);
+  font-size: 0.78rem;
+}
+
+.notification-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.notification-item {
+  border: 1px solid var(--bl-border);
+  border-radius: var(--radius-sm);
+  padding: 0.62rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.notification-item:hover {
+  border-color: rgba(15, 118, 110, 0.34);
+  background: var(--bl-primary-soft);
+}
+
+.notification-item > span {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.notification-item strong,
+.notification-item small,
+.notification-item em {
+  display: block;
+}
+
+.notification-item strong {
+  font-size: 0.84rem;
+}
+
+.notification-item small {
+  margin-top: 0.12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notification-item em {
+  margin-top: 0.1rem;
+  font-style: normal;
+}
+
+.notification-empty {
+  border: 1px dashed var(--bl-border);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem;
+  text-align: center;
+  font-weight: 800;
+}
+
+.notification-footer {
+  margin-top: 0.65rem;
+  display: inline-flex;
+  color: var(--bl-primary);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
 :global(body.theme-dark) .icon-button {
-  color: #5eead4;
+  background: rgba(7, 17, 31, 0.88);
+  border-color: rgba(148, 163, 184, 0.16);
+  color: var(--bl-primary);
+}
+
+:global(body.theme-dark) .notification-badge {
+  box-shadow: 0 0 0 3px #07111f;
+}
+
+:global(body.theme-dark) .notification-menu {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(18, 214, 196, 0.07), transparent 30%),
+    linear-gradient(145deg, rgba(9, 20, 34, 0.98), rgba(5, 13, 26, 0.99));
+  border-color: rgba(148, 163, 184, 0.16);
+}
+
+:global(body.theme-dark) .notification-item {
+  border-color: rgba(148, 163, 184, 0.14);
+  background: rgba(15, 23, 42, 0.42);
+}
+
+:global(body.theme-dark) .notification-item:hover {
+  border-color: rgba(18, 214, 196, 0.32);
+  background: rgba(18, 214, 196, 0.1);
 }
 
 .stats-grid {
@@ -739,7 +1114,51 @@ const goalDays = [
 }
 
 :global(body.theme-dark) .stat-tile p {
-  color: #5eead4;
+  color: var(--bl-primary);
+}
+
+:global(body.theme-dark) .stat-tile {
+  border-color: rgba(148, 163, 184, 0.16);
+  background:
+    radial-gradient(circle at 8% 20%, rgba(18, 214, 196, 0.08), transparent 34%),
+    linear-gradient(145deg, rgba(9, 20, 34, 0.94), rgba(5, 13, 26, 0.96));
+}
+
+:global(body.theme-dark) .stat-tile strong,
+:global(body.theme-dark) .goal-ring span,
+:global(body.theme-dark) .goal-content strong,
+:global(body.theme-dark) .subject-row b {
+  color: #f8fafc;
+}
+
+:global(body.theme-dark) .mint {
+  background: linear-gradient(145deg, rgba(18, 214, 196, 0.2), rgba(18, 214, 196, 0.06));
+  color: #67f8e8;
+  border: 1px solid rgba(18, 214, 196, 0.24);
+}
+
+:global(body.theme-dark) .violet {
+  background: linear-gradient(145deg, rgba(139, 92, 246, 0.22), rgba(139, 92, 246, 0.07));
+  color: #c4b5fd;
+  border: 1px solid rgba(139, 92, 246, 0.22);
+}
+
+:global(body.theme-dark) .amber {
+  background: linear-gradient(145deg, rgba(245, 158, 11, 0.24), rgba(245, 158, 11, 0.08));
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.22);
+}
+
+:global(body.theme-dark) .blue {
+  background: linear-gradient(145deg, rgba(59, 130, 246, 0.24), rgba(59, 130, 246, 0.08));
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.22);
+}
+
+:global(body.theme-dark) .rose {
+  background: linear-gradient(145deg, rgba(248, 113, 113, 0.22), rgba(248, 113, 113, 0.07));
+  color: #fecaca;
+  border: 1px solid rgba(248, 113, 113, 0.2);
 }
 
 .mini-progress,
@@ -816,10 +1235,12 @@ const goalDays = [
 :global(body.theme-dark) .card-header a,
 :global(body.theme-dark) .card-header button,
 :global(body.theme-dark) .text-link {
-  color: #5eead4;
+  color: var(--bl-primary);
 }
 
 :global(body.theme-dark) .filter-button {
+  background: rgba(7, 17, 31, 0.82);
+  border-color: rgba(148, 163, 184, 0.16);
   color: #cbd5e1;
 }
 
@@ -874,8 +1295,9 @@ const goalDays = [
 }
 
 :global(body.theme-dark) .insight-note {
-  border-color: rgba(45, 212, 191, 0.24);
-  color: #5eead4;
+  background: rgba(18, 214, 196, 0.1);
+  border-color: rgba(18, 214, 196, 0.2);
+  color: var(--bl-primary);
 }
 
 .step-list,
@@ -906,8 +1328,8 @@ const goalDays = [
 }
 
 :global(body.theme-dark) .step-row:hover {
-  border-color: rgba(94, 234, 212, 0.38);
-  background: rgba(20, 184, 166, 0.16);
+  border-color: rgba(18, 214, 196, 0.32);
+  background: rgba(18, 214, 196, 0.1);
 }
 
 .step-row strong,
@@ -946,48 +1368,39 @@ const goalDays = [
   margin-top: 0.82rem;
 }
 
+.dashboard-empty {
+  min-height: 5rem;
+  border: 1px dashed var(--bl-border);
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  padding: 0.8rem;
+  color: var(--bl-muted);
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+:global(body.theme-dark) .dashboard-empty {
+  background: rgba(2, 8, 23, 0.34);
+  border-color: rgba(148, 163, 184, 0.16);
+}
+
 .focus-panel {
   min-height: 290px;
   border-radius: var(--radius-lg);
-  padding: 2.2rem;
-  display: grid;
-  align-content: center;
-  gap: 1.05rem;
-  color: #f8fafc;
-  background:
-    radial-gradient(
-      circle at 26% 22%,
-      rgba(45, 212, 191, 0.42),
-      transparent 18%
-    ),
-    radial-gradient(
-      circle at 100% 78%,
-      rgba(6, 182, 212, 0.22),
-      transparent 28%
-    ),
-    linear-gradient(145deg, #064e49, #042f2e);
+  padding: 0;
+  overflow: hidden;
+  background: #020817;
   box-shadow: var(--shadow-strong);
 }
 
-.focus-panel span {
-  width: 3.7rem;
-  height: 3.7rem;
-  border-radius: 999px;
-  display: grid;
-  place-items: center;
-  background: rgba(45, 212, 191, 0.3);
-  font-weight: 900;
-}
-
-.focus-panel h2 {
-  max-width: 12rem;
-  font-size: 1.35rem;
-}
-
-.focus-panel p {
-  max-width: 14rem;
-  color: rgba(248, 250, 252, 0.82);
-  line-height: 1.6;
+.focus-panel img {
+  width: 100%;
+  height: 100%;
+  min-height: 290px;
+  display: block;
+  object-fit: cover;
 }
 
 .lower-grid {
@@ -1041,8 +1454,8 @@ const goalDays = [
   display: grid;
   place-items: center;
   background: conic-gradient(
-    var(--bl-primary) 0 83%,
-    var(--bl-border) 83% 100%
+    var(--bl-primary) 0 var(--goal-progress, 0%),
+    var(--bl-border) var(--goal-progress, 0%) 100%
   );
   position: relative;
 }
@@ -1097,7 +1510,59 @@ const goalDays = [
 }
 
 :global(body.theme-dark) .goal-days i {
-  color: #5eead4;
+  color: var(--bl-primary);
+}
+
+:global(body.theme-dark) .weekly-card,
+:global(body.theme-dark) .next-card,
+:global(body.theme-dark) .focus-subjects,
+:global(body.theme-dark) .activity-card,
+:global(body.theme-dark) .goals-card {
+  border-color: rgba(148, 163, 184, 0.16);
+  background:
+    radial-gradient(circle at 12% 0%, rgba(18, 214, 196, 0.07), transparent 30%),
+    linear-gradient(145deg, rgba(9, 20, 34, 0.94), rgba(5, 13, 26, 0.96));
+}
+
+:global(body.theme-dark) .card-header h2,
+:global(body.theme-dark) .step-row strong,
+:global(body.theme-dark) .subject-row strong,
+:global(body.theme-dark) .activity-row strong {
+  color: #f8fafc;
+}
+
+:global(body.theme-dark) .step-row {
+  border-color: rgba(148, 163, 184, 0.14);
+  background: rgba(15, 23, 42, 0.4);
+}
+
+:global(body.theme-dark) .step-row b {
+  color: #cbd5e1;
+}
+
+:global(body.theme-dark) .focus-panel {
+  border: 0;
+  background: #020817;
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.38);
+}
+
+:global(body.theme-dark) .mini-progress,
+:global(body.theme-dark) .progress-line {
+  background: rgba(148, 163, 184, 0.14);
+}
+
+:global(body.theme-dark) .mini-progress i,
+:global(body.theme-dark) .progress-line i {
+  background: linear-gradient(90deg, #12d6c4, #0aa99b);
+}
+
+:global(body.theme-dark) .goal-ring::after {
+  background: #07111f;
+}
+
+:global(body.theme-dark) .goal-days .done i {
+  background: rgba(18, 214, 196, 0.16);
+  border-color: rgba(18, 214, 196, 0.18);
 }
 
 .goal-days .done i {

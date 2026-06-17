@@ -1,7 +1,13 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useAuthStore } from '@/store/auth';
-import { getSummariesByOwner } from '@/services/summaryService';
+import {
+  deleteSummary,
+  getSummariesByOwner,
+  updateSummary,
+  updateSummaryReminder,
+  updateSummaryStatus,
+} from '@/services/summaryService';
 
 const authStore = useAuthStore();
 
@@ -10,6 +16,16 @@ const search = ref('');
 const selectedSubject = ref('Todos');
 const selectedStatus = ref('Todos');
 const summaries = ref([]);
+const selectedSummary = ref(null);
+const saving = ref(false);
+const reminderDays = ref(7);
+
+const editForm = reactive({
+  title: '',
+  subject: '',
+  description: '',
+  status: 'Novo',
+});
 
 const subjects = computed(() => ['Todos', ...new Set(summaries.value.map((item) => item.subject))]);
 const statuses = ['Todos', 'Novo', 'Em revisão', 'Revisado'];
@@ -36,10 +52,16 @@ const filteredSummaries = computed(() => {
   });
 });
 
+const pendingReminderCount = computed(() => {
+  const now = Date.now();
+  return summaries.value.filter((item) => item.reviewReminderAt && new Date(item.reviewReminderAt).getTime() <= now).length;
+});
+
 const libraryStats = computed(() => [
   { label: 'Resumos', value: summaries.value.length, detail: 'na biblioteca', tone: 'mint' },
   { label: 'Anexos', value: totalFiles.value, detail: 'arquivos salvos', tone: 'blue' },
   { label: 'Revisados', value: reviewedCount.value, detail: 'conteúdos finalizados', tone: 'amber' },
+  { label: 'Lembretes', value: pendingReminderCount.value, detail: 'pendentes hoje', tone: 'rose' },
 ]);
 
 function statusClass(status) {
@@ -59,6 +81,26 @@ function formatFileSize(size) {
   return `${(size / 1024 / 1024).toFixed(1)} MB`;
 }
 
+function formatDate(date) {
+  if (!date) return 'Sem data';
+  return new Date(date).toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+}
+
+function formatDateTime(date) {
+  if (!date) return 'Sem lembrete';
+  return new Date(date).toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 function firstLetters(value) {
   return String(value || 'RS')
     .split(' ')
@@ -66,6 +108,107 @@ function firstLetters(value) {
     .join('')
     .slice(0, 2)
     .toUpperCase();
+}
+
+function syncSummary(updated) {
+  summaries.value = summaries.value.map((item) => (item.id === updated.id ? updated : item));
+  if (selectedSummary.value?.id === updated.id) {
+    selectedSummary.value = updated;
+  }
+}
+
+function openSummary(summary) {
+  selectedSummary.value = summary;
+  editForm.title = summary.title;
+  editForm.subject = summary.subject;
+  editForm.description = summary.description || '';
+  editForm.status = formatStatus(summary.status);
+  reminderDays.value = 7;
+}
+
+function closeSummary() {
+  if (saving.value) return;
+  selectedSummary.value = null;
+}
+
+async function saveSummaryChanges() {
+  if (!selectedSummary.value || saving.value) return;
+
+  saving.value = true;
+  try {
+    const updated = await updateSummary(selectedSummary.value.id, {
+      title: editForm.title,
+      subject: editForm.subject,
+      description: editForm.description,
+      status: editForm.status,
+    });
+    syncSummary(updated);
+  } finally {
+    saving.value = false;
+  }
+}
+
+async function changeStatus(status) {
+  if (!selectedSummary.value || saving.value) return;
+
+  await changeSummaryStatus(selectedSummary.value, status);
+}
+
+async function changeSummaryStatus(summary, status) {
+  if (!summary || saving.value) return;
+
+  saving.value = true;
+  try {
+    const updated = await updateSummaryStatus(summary.id, status);
+    syncSummary(updated);
+    editForm.status = formatStatus(updated.status);
+  } finally {
+    saving.value = false;
+  }
+}
+
+async function saveReminder() {
+  if (!selectedSummary.value || saving.value) return;
+
+  const days = Math.max(1, Number(reminderDays.value) || 1);
+  const reminderDate = new Date();
+  reminderDate.setDate(reminderDate.getDate() + days);
+  reminderDate.setHours(9, 0, 0, 0);
+
+  saving.value = true;
+  try {
+    const updated = await updateSummaryReminder(selectedSummary.value.id, reminderDate.toISOString());
+    syncSummary(updated);
+  } finally {
+    saving.value = false;
+  }
+}
+
+async function clearReminder() {
+  if (!selectedSummary.value || saving.value) return;
+
+  saving.value = true;
+  try {
+    const updated = await updateSummaryReminder(selectedSummary.value.id, null);
+    syncSummary(updated);
+  } finally {
+    saving.value = false;
+  }
+}
+
+async function removeSelectedSummary() {
+  if (!selectedSummary.value || saving.value) return;
+  const confirmed = window.confirm(`Excluir "${selectedSummary.value.title}"? Esta ação não pode ser desfeita.`);
+  if (!confirmed) return;
+
+  saving.value = true;
+  try {
+    await deleteSummary(selectedSummary.value.id);
+    summaries.value = summaries.value.filter((item) => item.id !== selectedSummary.value.id);
+    selectedSummary.value = null;
+  } finally {
+    saving.value = false;
+  }
 }
 
 async function loadSummaries() {
@@ -150,6 +293,15 @@ onMounted(loadSummaries);
         <div class="summary-meta">
           <span>{{ item.subject }}</span>
           <span>{{ item.files?.length || 0 }} {{ item.files?.length === 1 ? 'anexo' : 'anexos' }}</span>
+          <span>Criado em {{ formatDate(item.createdAt) }}</span>
+          <span v-if="item.reviewReminderAt">Revisar em {{ formatDate(item.reviewReminderAt) }}</span>
+        </div>
+
+        <div class="summary-actions">
+          <RouterLink :to="`/abstracts/${item.id}`">Detalhes</RouterLink>
+          <button type="button" @click="changeSummaryStatus(item, item.status === 'Revisado' ? 'Em revisão' : 'Revisado')">
+            {{ item.status === 'Revisado' ? 'Reabrir' : 'Revisado' }}
+          </button>
         </div>
 
         <div v-if="item.files?.length" class="summary-files">
@@ -182,6 +334,98 @@ onMounted(loadSummaries);
         <RouterLink to="/upload" class="btn btn-primary">Enviar resumo</RouterLink>
       </div>
     </section>
+
+    <div v-if="selectedSummary" class="summary-modal-backdrop" @click.self="closeSummary">
+      <section class="summary-modal" aria-labelledby="summary-detail-title">
+        <header class="summary-modal-header">
+          <div>
+            <span class="badge badge-primary">{{ selectedSummary.subject }}</span>
+            <h2 id="summary-detail-title">{{ selectedSummary.title }}</h2>
+            <p>Criado em {{ formatDateTime(selectedSummary.createdAt) }}</p>
+          </div>
+          <button type="button" aria-label="Fechar detalhes" @click="closeSummary">×</button>
+        </header>
+
+        <div class="summary-detail-grid">
+          <form class="detail-form" @submit.prevent="saveSummaryChanges">
+            <div class="field">
+              <label for="edit-title">Título</label>
+              <input id="edit-title" v-model.trim="editForm.title" type="text" />
+            </div>
+
+            <div class="field">
+              <label for="edit-subject">Matéria</label>
+              <input id="edit-subject" v-model.trim="editForm.subject" type="text" />
+            </div>
+
+            <div class="field">
+              <label for="edit-status">Status</label>
+              <select id="edit-status" v-model="editForm.status">
+                <option v-for="status in statuses.filter((item) => item !== 'Todos')" :key="status" :value="status">
+                  {{ status }}
+                </option>
+              </select>
+            </div>
+
+            <div class="field detail-description">
+              <label for="edit-description">Descrição</label>
+              <textarea id="edit-description" v-model.trim="editForm.description" />
+            </div>
+
+            <div class="modal-actions">
+              <button type="submit" class="btn btn-primary" :disabled="saving">
+                {{ saving ? 'Salvando...' : 'Salvar alterações' }}
+              </button>
+              <button type="button" class="btn btn-secondary" :disabled="saving" @click="changeStatus('Revisado')">
+                Marcar revisado
+              </button>
+              <button type="button" class="danger-button" :disabled="saving" @click="removeSelectedSummary">
+                Excluir resumo
+              </button>
+            </div>
+          </form>
+
+          <aside class="detail-side">
+            <section class="detail-box">
+              <h3>Anexos</h3>
+              <div v-if="selectedSummary.files?.length" class="detail-files">
+                <a
+                  v-for="file in selectedSummary.files"
+                  :key="file.id"
+                  :href="file.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <span class="file-badge">PDF</span>
+                  <strong>{{ file.fileName }}</strong>
+                  <small>{{ formatFileSize(file.size) }}</small>
+                </a>
+              </div>
+              <p v-else class="detail-empty">Nenhum anexo enviado.</p>
+            </section>
+
+            <section class="detail-box">
+              <h3>Lembrete de revisão</h3>
+              <p>
+                Atual:
+                <strong>{{ selectedSummary.reviewReminderAt ? formatDateTime(selectedSummary.reviewReminderAt) : 'sem lembrete' }}</strong>
+              </p>
+              <div class="reminder-control">
+                <label for="reminder-days">Lembrar-me em</label>
+                <input id="reminder-days" v-model.number="reminderDays" type="number" min="1" max="365" />
+                <span>dias</span>
+              </div>
+              <div class="reminder-actions">
+                <button type="button" class="btn btn-primary" :disabled="saving" @click="saveReminder">Salvar lembrete</button>
+                <button type="button" class="btn btn-secondary" :disabled="saving || !selectedSummary.reviewReminderAt" @click="clearReminder">
+                  Limpar
+                </button>
+              </div>
+            </section>
+          </aside>
+        </div>
+      </section>
+    </div>
   </div>
 </template>
 
@@ -207,8 +451,8 @@ onMounted(loadSummaries);
 
 :global(body.theme-dark) .library-hero {
   background:
-    radial-gradient(circle at 100% 0%, rgba(45, 212, 191, 0.18), transparent 34%),
-    linear-gradient(145deg, rgba(5, 54, 49, 0.98), rgba(1, 23, 21, 0.96));
+    radial-gradient(circle at 100% 0%, rgba(18, 214, 196, 0.12), transparent 34%),
+    linear-gradient(145deg, rgba(9, 20, 34, 0.96), rgba(5, 13, 26, 0.98));
 }
 
 :global(body.theme-dark) .library-hero .badge-info {
@@ -236,7 +480,7 @@ onMounted(loadSummaries);
 
 .library-stats {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.65rem;
 }
 
@@ -251,7 +495,8 @@ onMounted(loadSummaries);
 }
 
 :global(body.theme-dark) .stat-card {
-  background: rgba(5, 54, 49, 0.72);
+  background: rgba(15, 23, 42, 0.5);
+  border-color: rgba(148, 163, 184, 0.16);
 }
 
 .stat-icon,
@@ -283,6 +528,11 @@ onMounted(loadSummaries);
 .amber {
   background: #fef3c7;
   color: #d97706;
+}
+
+.rose {
+  background: #fee2e2;
+  color: #dc2626;
 }
 
 .stat-card small {
@@ -330,7 +580,7 @@ onMounted(loadSummaries);
 }
 
 :global(body.theme-dark) .library-toolbar button {
-  color: #5eead4;
+  color: var(--bl-primary);
 }
 
 .summary-grid {
@@ -382,6 +632,40 @@ onMounted(loadSummaries);
   gap: 0.48rem;
 }
 
+.summary-actions {
+  grid-column: 1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.summary-actions a,
+.summary-actions button,
+.danger-button {
+  border: 1px solid var(--bl-border);
+  border-radius: 999px;
+  padding: 0.42rem 0.72rem;
+  background: var(--bl-surface);
+  color: var(--bl-primary);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.summary-actions a:hover,
+.summary-actions button:hover {
+  border-color: rgba(15, 118, 110, 0.36);
+  background: var(--bl-primary-soft);
+}
+
+.danger-button {
+  color: var(--bl-danger);
+}
+
+.danger-button:hover {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
 .summary-meta span {
   border-radius: 999px;
   padding: 0.22rem 0.58rem;
@@ -392,8 +676,8 @@ onMounted(loadSummaries);
 }
 
 :global(body.theme-dark) .summary-meta span {
-  background: rgba(45, 212, 191, 0.16);
-  color: #5eead4;
+  background: rgba(18, 214, 196, 0.12);
+  color: var(--bl-primary);
 }
 
 .summary-files {
@@ -416,7 +700,8 @@ onMounted(loadSummaries);
 }
 
 :global(body.theme-dark) .file-action {
-  background: rgba(5, 54, 49, 0.72);
+  background: rgba(15, 23, 42, 0.5);
+  border-color: rgba(148, 163, 184, 0.14);
 }
 
 .file-action:hover {
@@ -426,8 +711,8 @@ onMounted(loadSummaries);
 }
 
 :global(body.theme-dark) .file-action:hover {
-  border-color: rgba(94, 234, 212, 0.46);
-  background: rgba(20, 184, 166, 0.16);
+  border-color: rgba(18, 214, 196, 0.36);
+  background: rgba(18, 214, 196, 0.1);
 }
 
 .file-badge {
@@ -461,7 +746,7 @@ onMounted(loadSummaries);
 }
 
 :global(body.theme-dark) .file-action strong {
-  color: #5eead4;
+  color: var(--bl-primary);
 }
 
 .no-files {
@@ -488,6 +773,168 @@ onMounted(loadSummaries);
   color: var(--bl-text);
 }
 
+.summary-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(2, 6, 23, 0.68);
+  backdrop-filter: blur(10px);
+}
+
+.summary-modal {
+  width: min(1040px, 100%);
+  max-height: min(860px, calc(100vh - 2rem));
+  overflow: auto;
+  border: 1px solid var(--bl-border);
+  border-radius: var(--radius-lg);
+  background: var(--bl-surface);
+  box-shadow: var(--shadow-strong);
+}
+
+:global(body.theme-dark) .summary-modal {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(18, 214, 196, 0.07), transparent 30%),
+    linear-gradient(145deg, rgba(9, 20, 34, 0.98), rgba(5, 13, 26, 0.99));
+  border-color: rgba(148, 163, 184, 0.16);
+}
+
+.summary-modal-header {
+  border-bottom: 1px solid var(--bl-border);
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.summary-modal-header h2 {
+  margin-top: 0.5rem;
+  font-size: 1.45rem;
+}
+
+.summary-modal-header p {
+  margin-top: 0.32rem;
+  color: var(--bl-muted);
+  font-weight: 800;
+}
+
+.summary-modal-header button {
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 1px solid var(--bl-border);
+  border-radius: 999px;
+  background: var(--bl-surface);
+  color: var(--bl-muted);
+  font-size: 1.35rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.summary-detail-grid {
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
+  gap: 1rem;
+}
+
+.detail-form,
+.detail-side,
+.detail-box {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.detail-description {
+  grid-column: 1 / -1;
+}
+
+.detail-description textarea {
+  min-height: 150px;
+}
+
+.modal-actions,
+.reminder-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.detail-box {
+  border: 1px solid var(--bl-border);
+  border-radius: var(--radius-md);
+  padding: 0.9rem;
+  background: rgba(248, 250, 252, 0.55);
+}
+
+:global(body.theme-dark) .detail-box {
+  background: rgba(15, 23, 42, 0.42);
+  border-color: rgba(148, 163, 184, 0.14);
+}
+
+.detail-box h3 {
+  font-size: 0.98rem;
+}
+
+.detail-box p,
+.detail-empty {
+  color: var(--bl-muted);
+  line-height: 1.5;
+}
+
+.detail-box strong {
+  color: var(--bl-text);
+}
+
+.detail-files {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.detail-files a {
+  border: 1px solid var(--bl-border);
+  border-radius: var(--radius-sm);
+  padding: 0.58rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.detail-files strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.detail-files small {
+  color: var(--bl-muted);
+  font-weight: 800;
+}
+
+.reminder-control {
+  display: grid;
+  grid-template-columns: 1fr 5.5rem auto;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.reminder-control label,
+.reminder-control span {
+  color: var(--bl-muted);
+  font-weight: 800;
+}
+
+.reminder-control input {
+  border: 1px solid var(--bl-border);
+  border-radius: var(--radius-sm);
+  padding: 0.62rem;
+  background: var(--bl-surface);
+  color: var(--bl-text);
+  font-weight: 900;
+}
+
 @media (max-width: 980px) {
   .library-hero {
     align-items: stretch;
@@ -505,9 +952,14 @@ onMounted(loadSummaries);
   }
 
   .summary-files,
-  .no-files {
+  .no-files,
+  .summary-actions {
     grid-column: auto;
     grid-row: auto;
+  }
+
+  .summary-detail-grid {
+    grid-template-columns: 1fr;
   }
 }
 

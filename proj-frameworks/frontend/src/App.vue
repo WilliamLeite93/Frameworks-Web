@@ -183,17 +183,6 @@ onUnmounted(() => {
         <button
           type="button"
           class="sidebar-link"
-          :class="{ active: isActive('Dashboard') }"
-          title="Dashboard"
-          @click="goToProtected('Dashboard', 'o Dashboard')"
-        >
-          <span class="link-tag">DB</span>
-          <span v-if="!isSidebarCollapsed">Dashboard</span>
-        </button>
-
-        <button
-          type="button"
-          class="sidebar-link"
           :class="{ active: isActive('Abstracts') }"
           title="Resumos"
           @click="goToProtected('Abstracts', 'Resumos')"
@@ -222,6 +211,22 @@ onUnmounted(() => {
         >
           <span class="link-tag">UP</span>
           <span v-if="!isSidebarCollapsed">Upload</span>
+        </button>
+
+        <button
+          type="button"
+          class="sidebar-link"
+          :class="{ active: isActive('Calendar') }"
+          title="Calendário"
+          @click="goToProtected('Calendar', 'Calendário')"
+        >
+          <span class="link-tag" aria-hidden="true">
+            <svg class="sidebar-svg" viewBox="0 0 24 24" focusable="false">
+              <path d="M7 2.75v3.1M17 2.75v3.1M4.25 9.1h15.5" />
+              <path d="M6.4 5h11.2a2.4 2.4 0 0 1 2.4 2.4v10.2a2.4 2.4 0 0 1-2.4 2.4H6.4A2.4 2.4 0 0 1 4 17.6V7.4A2.4 2.4 0 0 1 6.4 5Z" />
+            </svg>
+          </span>
+          <span v-if="!isSidebarCollapsed">Calendário</span>
         </button>
       </nav>
 
@@ -322,8 +327,21 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.6);
 }
 
+.sidebar-svg {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 :global(body.theme-dark) .sidebar-user {
-  background: rgba(5, 54, 49, 0.72);
+  background:
+    linear-gradient(135deg, rgba(18, 214, 196, 0.12), rgba(15, 23, 42, 0.72));
+  border-color: rgba(18, 214, 196, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .sidebar-user small {
@@ -348,7 +366,9 @@ onUnmounted(() => {
 }
 
 :global(body.theme-dark) .todo-panel {
-  background: rgba(5, 54, 49, 0.72);
+  background: rgba(7, 17, 31, 0.72);
+  border-color: rgba(148, 163, 184, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .todo-panel h3 {
@@ -371,6 +391,7 @@ onUnmounted(() => {
 :global(body.theme-dark) .todo-form input {
   background: var(--bl-surface);
   color: var(--bl-text);
+  border-color: rgba(148, 163, 184, 0.22);
 }
 
 .todo-form .btn {
@@ -401,7 +422,8 @@ onUnmounted(() => {
 }
 
 :global(body.theme-dark) .todo-list li {
-  background: rgba(1, 23, 21, 0.38);
+  background: rgba(2, 8, 23, 0.54);
+  border-color: rgba(148, 163, 184, 0.14);
 }
 
 .todo-list li.done span {
@@ -444,9 +466,9 @@ onUnmounted(() => {
 }
 
 :global(body.theme-dark) .todo-remove:hover {
-  color: #5eead4;
-  border-color: rgba(45, 212, 191, 0.42);
-  background: rgba(20, 184, 166, 0.16);
+  color: var(--bl-primary);
+  border-color: rgba(18, 214, 196, 0.42);
+  background: rgba(18, 214, 196, 0.12);
 }
 
 .todo-empty {

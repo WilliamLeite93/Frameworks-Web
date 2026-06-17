@@ -3,6 +3,7 @@ import { reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/auth';
 import bgLogin from '@/assets/bg-login.png';
+import brainLogLogo from '@/assets/brainlog-logo.png';
 
 const route = useRoute();
 const router = useRouter();
@@ -38,7 +39,7 @@ async function handleLogin() {
 
   try {
     await authStore.login({ email, password });
-    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/dashboard';
+    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/';
     router.push(redirect);
   } catch (error) {
     errorMessage.value = error?.message || 'Não foi possível fazer login.';
@@ -52,13 +53,7 @@ async function handleLogin() {
   <section class="login-page fade-in-up" :style="{ backgroundImage: `url(${bgLogin})` }">
     <div class="login-copy" aria-labelledby="login-hero-title">
       <RouterLink to="/" class="login-brand" aria-label="BrainLog - página inicial">
-        <span class="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 48 48" role="img">
-            <path d="M18.4 38.8c-5.7 0-10.3-4.2-10.3-9.6 0-2.4.9-4.5 2.4-6.2a9.4 9.4 0 0 1 9.2-12.2 10.1 10.1 0 0 1 18.1 6.3 10.4 10.4 0 0 1-2.4 20.5H33" />
-            <path d="M18.5 19.4c3.1-.8 5.4.3 6.9 3.1 1.1-2.3 3-3.7 5.8-4.1" />
-            <path d="M17.2 27.8h5.6l3.4-5.9 4.5 10.3 2.5-4.4h4.4" />
-          </svg>
-        </span>
+        <img :src="brainLogLogo" alt="" class="brand-mark" aria-hidden="true" />
         <span>BrainLog</span>
       </RouterLink>
 
@@ -181,21 +176,9 @@ async function handleLogin() {
         <p v-if="errorMessage" class="field-error">{{ errorMessage }}</p>
 
         <button type="submit" class="login-submit" :disabled="loading">
-          <span aria-hidden="true">
-            <svg viewBox="0 0 24 24">
-              <path d="M7 10h10v9H7z" />
-              <path d="M9.2 10V7.8a2.8 2.8 0 0 1 5.6 0V10" />
-            </svg>
-          </span>
           {{ loading ? 'Entrando...' : 'Entrar' }}
         </button>
 
-        <div class="divider"><span>ou continue com</span></div>
-
-        <div class="social-actions">
-          <button type="button"><span>G</span>Continuar com Google</button>
-          <button type="button"><span>A</span>Continuar com Apple</button>
-        </div>
       </form>
 
       <p class="auth-footer">
@@ -227,7 +210,7 @@ async function handleLogin() {
   background-color: #eefcf9;
   background-position: center;
   background-size: cover;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .login-copy {
@@ -243,7 +226,7 @@ async function handleLogin() {
   display: inline-flex;
   width: fit-content;
   align-items: center;
-  gap: 0.72rem;
+  gap: 0.82rem;
   color: #08756d;
   font-family: 'Sora', sans-serif;
   font-size: clamp(1.25rem, 2vw, 1.8rem);
@@ -252,22 +235,15 @@ async function handleLogin() {
 }
 
 .brand-mark {
-  width: 3.2rem;
-  height: 3.2rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #0f9f94;
+  width: clamp(170px, 18vw, 220px);
+  height: auto;
+  max-height: 96px;
+  display: block;
+  object-fit: contain;
 }
 
-.brand-mark svg {
-  width: 100%;
-  height: 100%;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 2.3;
+.login-brand span {
+  display: none;
 }
 
 .login-heading {

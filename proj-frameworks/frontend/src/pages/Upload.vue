@@ -1,15 +1,17 @@
 <script setup>
-import { computed, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useAuthStore } from '@/store/auth';
 import { useFiles } from '@/hooks/useFiles';
-import { createSummary, uploadSummaryFiles } from '@/services/summaryService';
+import { createSummary, getSummariesByOwner, uploadSummaryFiles } from '@/services/summaryService';
 
 const authStore = useAuthStore();
 const { files, addFiles, removeFile, clearFiles } = useFiles();
 
 const loading = ref(false);
+const loadingRecent = ref(false);
 const feedback = ref('');
 const isDragging = ref(false);
+const summaries = ref([]);
 
 const form = reactive({
   title: '',
@@ -17,13 +19,29 @@ const form = reactive({
   description: '',
 });
 
-const recentUploads = [
-  { title: 'Funções do 1º grau - Resumo', meta: 'Matemática - PDF - 1.2 MB', time: 'Hoje, 10:42', type: 'PDF' },
-  { title: 'História do Brasil - Lista de exercícios', meta: 'História - DOCX - 2.4 MB', time: 'Ontem, 18:30', type: 'DOC' },
-  { title: 'Mapa mental - Fotossíntese', meta: 'Biologia - PNG - 890 KB', time: 'Ontem, 16:15', type: 'IMG' },
-];
-
 const fileCountLabel = computed(() => `${files.value.length} ${files.value.length === 1 ? 'arquivo' : 'arquivos'}`);
+
+const recentUploads = computed(() => {
+  return [...summaries.value]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 3)
+    .map((summary) => {
+      const firstFile = Array.isArray(summary.files) ? summary.files[0] : null;
+      const fileCount = summary.files?.length || 0;
+      const fileLabel = fileCount
+        ? `${fileCount} ${fileCount === 1 ? 'anexo' : 'anexos'}`
+        : 'sem anexos';
+      const sizeLabel = firstFile?.size ? ` - ${formatFileSize(firstFile.size)}` : '';
+
+      return {
+        id: summary.id,
+        title: summary.title,
+        meta: `${summary.subject} - ${fileLabel}${sizeLabel}`,
+        time: formatRelativeDate(summary.createdAt),
+        type: fileType(firstFile?.fileName),
+      };
+    });
+});
 
 function handleSelectFile(event) {
   addFiles(event.target.files);
@@ -44,8 +62,42 @@ function formatFileSize(size) {
 }
 
 function fileType(name) {
-  const extension = String(name || '').split('.').pop()?.toUpperCase();
+  const value = String(name || '');
+  if (!value.includes('.')) return 'ARQ';
+
+  const extension = value.split('.').pop()?.toUpperCase();
   return extension?.slice(0, 3) || 'ARQ';
+}
+
+function formatRelativeDate(date) {
+  const timestamp = new Date(date).getTime();
+  if (!timestamp) return '';
+
+  const current = new Date();
+  const target = new Date(timestamp);
+  const time = target.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  const today = current.toDateString();
+
+  current.setDate(current.getDate() - 1);
+
+  if (target.toDateString() === today) return `Hoje, ${time}`;
+  if (target.toDateString() === current.toDateString()) return `Ontem, ${time}`;
+
+  return target.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+}
+
+async function loadRecentUploads() {
+  if (!authStore.user?.id) {
+    summaries.value = [];
+    return;
+  }
+
+  loadingRecent.value = true;
+  try {
+    summaries.value = await getSummariesByOwner(authStore.user.id);
+  } finally {
+    loadingRecent.value = false;
+  }
 }
 
 async function handleSubmit() {
@@ -74,6 +126,7 @@ async function handleSubmit() {
     form.subject = 'Matemática';
     form.description = '';
     clearFiles();
+    await loadRecentUploads();
     feedback.value = 'Resumo enviado com sucesso para sua biblioteca.';
   } catch {
     feedback.value = 'Falha ao enviar resumo.';
@@ -81,6 +134,8 @@ async function handleSubmit() {
     loading.value = false;
   }
 }
+
+onMounted(loadRecentUploads);
 </script>
 
 <template>
@@ -201,8 +256,8 @@ async function handleSubmit() {
         <RouterLink to="/abstracts">Ver todos</RouterLink>
       </div>
 
-      <div class="recent-list">
-        <article v-for="item in recentUploads" :key="item.title" class="recent-item">
+      <div v-if="!loadingRecent && recentUploads.length" class="recent-list">
+        <article v-for="item in recentUploads" :key="item.id" class="recent-item">
           <span class="file-type">{{ item.type }}</span>
           <div>
             <strong>{{ item.title }}</strong>
@@ -211,6 +266,9 @@ async function handleSubmit() {
           <time>{{ item.time }}</time>
         </article>
       </div>
+
+      <p v-else-if="loadingRecent" class="recent-empty">Carregando seus uploads...</p>
+      <p v-else class="recent-empty">Sem resumos recentes.</p>
     </section>
   </div>
 </template>
@@ -238,8 +296,8 @@ async function handleSubmit() {
 
 :global(body.theme-dark) .upload-hero {
   background:
-    radial-gradient(circle at 100% 0%, rgba(45, 212, 191, 0.18), transparent 34%),
-    linear-gradient(145deg, rgba(5, 54, 49, 0.98), rgba(1, 23, 21, 0.96));
+    radial-gradient(circle at 100% 0%, rgba(18, 214, 196, 0.12), transparent 34%),
+    linear-gradient(145deg, rgba(9, 20, 34, 0.96), rgba(5, 13, 26, 0.98));
 }
 
 .upload-hero h1 {
@@ -358,8 +416,8 @@ form .btn {
 }
 
 :global(body.theme-dark) .tips-box {
-  border: 1px solid rgba(45, 212, 191, 0.24);
-  background: linear-gradient(135deg, rgba(15, 118, 110, 0.24), rgba(14, 165, 233, 0.14));
+  border: 1px solid rgba(18, 214, 196, 0.2);
+  background: linear-gradient(135deg, rgba(18, 214, 196, 0.1), rgba(14, 165, 233, 0.08));
 }
 
 .tips-box strong {
@@ -368,7 +426,7 @@ form .btn {
 }
 
 :global(body.theme-dark) .tips-box strong {
-  color: #5eead4;
+  color: var(--bl-primary);
 }
 
 .tips-box span {
@@ -435,10 +493,10 @@ form .btn {
 }
 
 :global(body.theme-dark) .drop-zone {
-  border-color: rgba(45, 212, 191, 0.42);
+  border-color: rgba(18, 214, 196, 0.32);
   background:
-    radial-gradient(circle at 50% 8%, rgba(45, 212, 191, 0.18), transparent 34%),
-    rgba(5, 54, 49, 0.72);
+    radial-gradient(circle at 50% 8%, rgba(18, 214, 196, 0.13), transparent 34%),
+    rgba(15, 23, 42, 0.5);
 }
 
 .drop-zone.dragging,
@@ -450,8 +508,8 @@ form .btn {
 
 :global(body.theme-dark) .drop-zone.dragging,
 :global(body.theme-dark) .drop-zone:hover {
-  border-color: #5eead4;
-  background: rgba(20, 184, 166, 0.16);
+  border-color: var(--bl-primary);
+  background: rgba(18, 214, 196, 0.1);
 }
 
 .drop-zone input {
@@ -495,8 +553,8 @@ form .btn {
 }
 
 :global(body.theme-dark) .drop-zone b {
-  border-color: rgba(94, 234, 212, 0.44);
-  color: #5eead4;
+  border-color: rgba(18, 214, 196, 0.38);
+  color: var(--bl-primary);
 }
 
 .drop-zone em {
@@ -573,9 +631,9 @@ form .btn {
 }
 
 :global(body.theme-dark) .file-list button:hover {
-  color: #5eead4;
-  border-color: rgba(45, 212, 191, 0.42);
-  background: rgba(20, 184, 166, 0.16);
+  color: var(--bl-primary);
+  border-color: rgba(18, 214, 196, 0.36);
+  background: rgba(18, 214, 196, 0.1);
 }
 
 .empty-files {
@@ -611,6 +669,24 @@ form .btn {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.65rem;
+}
+
+.recent-empty {
+  margin-top: 0.9rem;
+  min-height: 4.6rem;
+  border: 1px dashed var(--bl-border);
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  color: var(--bl-muted);
+  font-size: 0.88rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+:global(body.theme-dark) .recent-empty {
+  background: rgba(2, 8, 23, 0.34);
+  border-color: rgba(148, 163, 184, 0.16);
 }
 
 .section-label a {
