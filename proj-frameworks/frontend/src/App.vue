@@ -183,17 +183,6 @@ onUnmounted(() => {
         <button
           type="button"
           class="sidebar-link"
-          :class="{ active: isActive('Dashboard') }"
-          title="Dashboard"
-          @click="goToProtected('Dashboard', 'o Dashboard')"
-        >
-          <span class="link-tag">DB</span>
-          <span v-if="!isSidebarCollapsed">Dashboard</span>
-        </button>
-
-        <button
-          type="button"
-          class="sidebar-link"
           :class="{ active: isActive('Abstracts') }"
           title="Resumos"
           @click="goToProtected('Abstracts', 'Resumos')"

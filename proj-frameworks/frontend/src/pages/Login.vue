@@ -39,7 +39,7 @@ async function handleLogin() {
 
   try {
     await authStore.login({ email, password });
-    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/dashboard';
+    const redirect = typeof route.query.redirect === 'string' ? route.query.redirect : '/';
     router.push(redirect);
   } catch (error) {
     errorMessage.value = error?.message || 'Não foi possível fazer login.';

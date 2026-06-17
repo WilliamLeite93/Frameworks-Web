@@ -64,7 +64,7 @@ async function handleRegister() {
 
   try {
     await authStore.register(payload);
-    router.push('/dashboard');
+    router.push('/');
   } catch (error) {
     errorMessage.value = error?.message || 'Não foi possível criar sua conta.';
   } finally {
