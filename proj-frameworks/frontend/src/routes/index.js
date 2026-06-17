@@ -21,6 +21,12 @@ const routes = [
     meta: { requiresAuth: true },
   },
   {
+    path: '/calendar',
+    name: 'Calendar',
+    component: () => import('@/pages/Calendar.vue'),
+    meta: { requiresAuth: true },
+  },
+  {
     path: '/abstracts',
     name: 'Abstracts',
     component: () => import('@/pages/Abstracts.vue'),
@@ -75,6 +81,7 @@ router.afterEach((to) => {
     ResetPassword: 'BrainLog | Redefinir senha',
     Dashboard: 'BrainLog | Dashboard',
     Upload: 'BrainLog | Upload',
+    Calendar: 'BrainLog | Calendário',
     Abstracts: 'BrainLog | Biblioteca de Resumos',
     SummaryDetail: 'BrainLog | Detalhes do Resumo',
     Evolution: 'BrainLog | Evolução',

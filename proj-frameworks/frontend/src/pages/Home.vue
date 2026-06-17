@@ -14,6 +14,7 @@ const authStore = useAuthStore();
 const userName = computed(() => authStore.userName || 'Estudante');
 const summaries = ref([]);
 const loading = ref(false);
+const showNotifications = ref(false);
 
 const weekLabels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 const tones = ['blue', 'violet', 'amber', 'mint', 'rose'];
@@ -33,6 +34,36 @@ const dueReminders = computed(() => {
 });
 const pendingReviews = computed(() => summaries.value.filter((item) => item.status !== 'Revisado'));
 const notificationCount = computed(() => new Set([...dueReminders.value, ...pendingReviews.value].map((item) => item.id)).size);
+const notifications = computed(() => {
+  const seen = new Set();
+  const items = [];
+
+  dueReminders.value.forEach((summary) => {
+    seen.add(summary.id);
+    items.push({
+      id: `reminder-${summary.id}`,
+      title: 'Revisão agendada',
+      detail: summary.title,
+      meta: summary.subject,
+      to: `/abstracts/${summary.id}`,
+      tone: 'amber',
+    });
+  });
+
+  pendingReviews.value.forEach((summary) => {
+    if (seen.has(summary.id)) return;
+    items.push({
+      id: `pending-${summary.id}`,
+      title: 'Resumo pendente',
+      detail: summary.title,
+      meta: summary.status || 'Novo',
+      to: `/abstracts/${summary.id}`,
+      tone: 'mint',
+    });
+  });
+
+  return items.slice(0, 5);
+});
 
 const streakDays = computed(() => {
   const activeDays = new Set(summaries.value.map((item) => new Date(item.createdAt).toDateString()));
@@ -296,13 +327,64 @@ watch(() => authStore.user?.id, loadHomeData);
           </div>
         </div>
 
-        <RouterLink
-          to="/abstracts"
-          class="icon-button"
-          :aria-label="`${notificationCount} notificações de revisão`"
-        >
-          {{ loading ? '...' : notificationCount }}
-        </RouterLink>
+        <div class="notification-wrap">
+          <button
+            type="button"
+            class="icon-button notification-button"
+            :aria-label="`${notificationCount} notificações de revisão`"
+            :aria-expanded="showNotifications"
+            @click="showNotifications = !showNotifications"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path
+                d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+              />
+              <path
+                d="M10 21h4"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-width="2"
+              />
+            </svg>
+            <span v-if="notificationCount" class="notification-badge">{{ notificationCount }}</span>
+          </button>
+
+          <div v-if="showNotifications" class="notification-menu">
+            <header>
+              <strong>Notificações</strong>
+              <small>{{ notificationCount }} {{ notificationCount === 1 ? 'item' : 'itens' }}</small>
+            </header>
+
+            <div v-if="notifications.length" class="notification-list">
+              <RouterLink
+                v-for="notification in notifications"
+                :key="notification.id"
+                :to="notification.to"
+                class="notification-item"
+                @click="showNotifications = false"
+              >
+                <span :class="notification.tone">{{ notification.title.slice(0, 2).toUpperCase() }}</span>
+                <div>
+                  <strong>{{ notification.title }}</strong>
+                  <small>{{ notification.detail }}</small>
+                  <em>{{ notification.meta }}</em>
+                </div>
+              </RouterLink>
+            </div>
+
+            <p v-else class="notification-empty">Nenhuma notificação no momento.</p>
+
+            <RouterLink to="/abstracts" class="notification-footer" @click="showNotifications = false">
+              Ver biblioteca
+            </RouterLink>
+          </div>
+        </div>
 
         <RouterLink
           to="/upload"
@@ -782,10 +864,163 @@ watch(() => authStore.user?.id, loadHomeData);
   font-weight: 900;
 }
 
+.notification-wrap {
+  position: relative;
+}
+
+.notification-button {
+  position: relative;
+  cursor: pointer;
+}
+
+.notification-button svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -0.32rem;
+  right: -0.32rem;
+  min-width: 1.18rem;
+  height: 1.18rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  padding: 0 0.28rem;
+  background: var(--bl-primary);
+  color: #ffffff;
+  font-size: 0.68rem;
+  line-height: 1;
+  box-shadow: 0 0 0 3px var(--bl-surface);
+}
+
+.notification-menu {
+  position: absolute;
+  top: calc(100% + 0.7rem);
+  right: 0;
+  z-index: 20;
+  width: min(340px, calc(100vw - 2rem));
+  border: 1px solid var(--bl-border);
+  border-radius: var(--radius-md);
+  background: var(--bl-surface);
+  box-shadow: var(--shadow-strong);
+  padding: 0.78rem;
+}
+
+.notification-menu header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.notification-menu header strong {
+  font-size: 0.96rem;
+}
+
+.notification-menu header small,
+.notification-item small,
+.notification-item em,
+.notification-empty {
+  color: var(--bl-muted);
+  font-size: 0.78rem;
+}
+
+.notification-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.notification-item {
+  border: 1px solid var(--bl-border);
+  border-radius: var(--radius-sm);
+  padding: 0.62rem;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.notification-item:hover {
+  border-color: rgba(15, 118, 110, 0.34);
+  background: var(--bl-primary-soft);
+}
+
+.notification-item > span {
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.notification-item strong,
+.notification-item small,
+.notification-item em {
+  display: block;
+}
+
+.notification-item strong {
+  font-size: 0.84rem;
+}
+
+.notification-item small {
+  margin-top: 0.12rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notification-item em {
+  margin-top: 0.1rem;
+  font-style: normal;
+}
+
+.notification-empty {
+  border: 1px dashed var(--bl-border);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem;
+  text-align: center;
+  font-weight: 800;
+}
+
+.notification-footer {
+  margin-top: 0.65rem;
+  display: inline-flex;
+  color: var(--bl-primary);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
 :global(body.theme-dark) .icon-button {
   background: rgba(7, 17, 31, 0.88);
   border-color: rgba(148, 163, 184, 0.16);
   color: var(--bl-primary);
+}
+
+:global(body.theme-dark) .notification-badge {
+  box-shadow: 0 0 0 3px #07111f;
+}
+
+:global(body.theme-dark) .notification-menu {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(18, 214, 196, 0.07), transparent 30%),
+    linear-gradient(145deg, rgba(9, 20, 34, 0.98), rgba(5, 13, 26, 0.99));
+  border-color: rgba(148, 163, 184, 0.16);
+}
+
+:global(body.theme-dark) .notification-item {
+  border-color: rgba(148, 163, 184, 0.14);
+  background: rgba(15, 23, 42, 0.42);
+}
+
+:global(body.theme-dark) .notification-item:hover {
+  border-color: rgba(18, 214, 196, 0.32);
+  background: rgba(18, 214, 196, 0.1);
 }
 
 .stats-grid {

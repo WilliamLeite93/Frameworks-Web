@@ -223,6 +223,22 @@ onUnmounted(() => {
           <span class="link-tag">UP</span>
           <span v-if="!isSidebarCollapsed">Upload</span>
         </button>
+
+        <button
+          type="button"
+          class="sidebar-link"
+          :class="{ active: isActive('Calendar') }"
+          title="Calendário"
+          @click="goToProtected('Calendar', 'Calendário')"
+        >
+          <span class="link-tag" aria-hidden="true">
+            <svg class="sidebar-svg" viewBox="0 0 24 24" focusable="false">
+              <path d="M7 2.75v3.1M17 2.75v3.1M4.25 9.1h15.5" />
+              <path d="M6.4 5h11.2a2.4 2.4 0 0 1 2.4 2.4v10.2a2.4 2.4 0 0 1-2.4 2.4H6.4A2.4 2.4 0 0 1 4 17.6V7.4A2.4 2.4 0 0 1 6.4 5Z" />
+            </svg>
+          </span>
+          <span v-if="!isSidebarCollapsed">Calendário</span>
+        </button>
       </nav>
 
       <p v-if="authNotice && !isSidebarCollapsed" class="sidebar-notice">{{ authNotice }}</p>
@@ -320,6 +336,16 @@ onUnmounted(() => {
   border-radius: var(--radius-sm);
   padding: 0.58rem 0.66rem;
   background: rgba(255, 255, 255, 0.6);
+}
+
+.sidebar-svg {
+  width: 1rem;
+  height: 1rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 :global(body.theme-dark) .sidebar-user {
