@@ -1,4 +1,5 @@
 import cors from 'cors';
+import crypto from 'node:crypto';
 import dotenv from 'dotenv';
 import express from 'express';
 import multer from 'multer';
@@ -16,6 +17,14 @@ const app = express();
 const port = Number(process.env.PORT || 3030);
 const jwtSecret = process.env.JWT_SECRET || 'dev-secret-change-me';
 const uploadDir = process.env.UPLOAD_DIR || 'uploads';
+const resetTokenMinutes = Number(process.env.PASSWORD_RESET_TOKEN_MINUTES || 30);
+const appBaseUrl = process.env.APP_BASE_URL || 'http://localhost:3031';
+const mailtrapApiKey = process.env.MAILTRAP_API_KEY || '';
+const mailtrapUseSandbox = process.env.MAILTRAP_USE_SANDBOX === 'true';
+const mailtrapInboxId = process.env.MAILTRAP_INBOX_ID || '';
+const mailtrapFromEmail = process.env.MAILTRAP_FROM_EMAIL || (mailtrapUseSandbox ? 'sandbox@example.com' : '');
+const mailtrapFromName = process.env.MAILTRAP_FROM_NAME || 'BrainLog';
+let didWarnMailtrapConfig = false;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const uploadsPath = path.resolve(__dirname, '..', uploadDir);
@@ -57,6 +66,15 @@ const loginSchema = z.object({
   password: z.string({ required_error: 'Informe sua senha.' }).min(1, 'Informe sua senha.'),
 });
 
+const forgotPasswordSchema = z.object({
+  email: z.string({ required_error: 'Informe seu e-mail.' }).trim().email('Informe um e-mail válido.').transform((value) => value.toLowerCase()),
+});
+
+const resetPasswordSchema = z.object({
+  token: z.string({ required_error: 'Informe o token de recuperação.' }).trim().min(20, 'Token de recuperação inválido.'),
+  password: z.string({ required_error: 'Informe sua nova senha.' }).min(6, 'A senha precisa ter pelo menos 6 caracteres.'),
+});
+
 const summarySchema = z.object({
   ownerId: z.coerce.number().int().positive(),
   title: z.string().trim().min(2),
@@ -89,6 +107,99 @@ function signToken(user: AuthUser) {
   return jwt.sign(user, jwtSecret, { expiresIn: '7d' });
 }
 
+function createPasswordResetToken() {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+function hashPasswordResetToken(token: string) {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
+
+function passwordResetUrl(token: string) {
+  const url = new URL('/reset-password', appBaseUrl);
+  url.searchParams.set('token', token);
+  return url.toString();
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+async function sendPasswordResetEmail(user: { name: string; email: string }, token: string) {
+  if (!mailtrapApiKey || !mailtrapFromEmail || (mailtrapUseSandbox && !mailtrapInboxId)) {
+    if (!didWarnMailtrapConfig) {
+      console.warn('Mailtrap não configurado. Defina MAILTRAP_API_KEY, MAILTRAP_FROM_EMAIL e, no sandbox, MAILTRAP_INBOX_ID.');
+      didWarnMailtrapConfig = true;
+    }
+    return false;
+  }
+
+  const resetUrl = passwordResetUrl(token);
+  const endpoint = mailtrapUseSandbox
+    ? `https://sandbox.api.mailtrap.io/api/send/${mailtrapInboxId}`
+    : 'https://send.api.mailtrap.io/api/send';
+
+  const firstName = user.name.split(' ')[0] || 'Estudante';
+  const htmlResetUrl = escapeHtml(resetUrl);
+  const htmlFirstName = escapeHtml(firstName);
+  const expiresIn = `${resetTokenMinutes} minutos`;
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${mailtrapApiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: {
+        email: mailtrapFromEmail,
+        name: mailtrapFromName,
+      },
+      to: [
+        {
+          email: user.email,
+          name: user.name,
+        },
+      ],
+      subject: 'Redefinição de senha - BrainLog',
+      category: 'password_reset',
+      text: [
+        `Olá, ${firstName}.`,
+        '',
+        'Recebemos uma solicitação para redefinir sua senha no BrainLog.',
+        `Use este link para criar uma nova senha: ${resetUrl}`,
+        '',
+        `Este link expira em ${expiresIn}. Se você não solicitou a alteração, ignore este e-mail.`,
+      ].join('\n'),
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #111827;">
+          <p>Olá, ${htmlFirstName}.</p>
+          <p>Recebemos uma solicitação para redefinir sua senha no BrainLog.</p>
+          <p>
+            <a href="${htmlResetUrl}" style="display: inline-block; padding: 10px 16px; border-radius: 999px; background: #0f766e; color: #ffffff; text-decoration: none; font-weight: 700;">
+              Redefinir senha
+            </a>
+          </p>
+          <p>Este link expira em ${escapeHtml(expiresIn)}. Se você não solicitou a alteração, ignore este e-mail.</p>
+          <p style="font-size: 12px; color: #64748b;">Se o botão não funcionar, copie e cole este link no navegador:<br>${htmlResetUrl}</p>
+        </div>
+      `,
+    }),
+  });
+
+  if (!response.ok) {
+    const details = await response.text();
+    throw new Error(`Mailtrap retornou ${response.status}: ${details}`);
+  }
+
+  return true;
+}
+
 function validationMessage(error: z.ZodError, fallback: string) {
   return error.issues[0]?.message || fallback;
 }
@@ -111,7 +222,7 @@ function publicSummary(summary: {
   description: string | null;
   status: SummaryStatus;
   createdAt: Date;
-  files?: { fileName: string }[];
+  files?: { id: number; fileName: string; storedName: string | null; mimeType: string | null; size: number | null }[];
 }) {
   return {
     id: summary.id,
@@ -122,6 +233,14 @@ function publicSummary(summary: {
     status: statusLabels[summary.status],
     createdAt: summary.createdAt.toISOString(),
     fileNames: summary.files?.map((file) => file.fileName) || [],
+    files:
+      summary.files?.map((file) => ({
+        id: file.id,
+        fileName: file.fileName,
+        mimeType: file.mimeType,
+        size: file.size,
+        url: file.storedName ? `/uploads/${encodeURIComponent(file.storedName)}` : null,
+      })) || [],
   };
 }
 
@@ -214,6 +333,81 @@ app.post('/auth/login', async (req, res, next) => {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({ message: validationMessage(error, 'Credenciais inválidas.'), issues: error.issues });
+    }
+
+    return next(error);
+  }
+});
+
+app.post('/auth/forgot-password', async (req, res, next) => {
+  try {
+    const payload = forgotPasswordSchema.parse(req.body);
+    const user = await prisma.user.findUnique({ where: { email: payload.email } });
+    let resetToken: string | null = null;
+    if (user) {
+      resetToken = createPasswordResetToken();
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          resetTokenHash: hashPasswordResetToken(resetToken),
+          resetTokenExpiresAt: new Date(Date.now() + resetTokenMinutes * 60 * 1000),
+        },
+      });
+
+      try {
+        await sendPasswordResetEmail({ name: user.name, email: user.email }, resetToken);
+      } catch (emailError) {
+        console.error('Falha ao enviar e-mail de recuperação pela Mailtrap.', emailError);
+      }
+
+      if (process.env.NODE_ENV !== 'production') {
+        console.info(`Token de recuperação gerado para ${payload.email}: ${resetToken}`);
+      }
+    }
+
+    res.json({
+      message: 'Se o e-mail estiver cadastrado, enviaremos as instruções para redefinir sua senha.',
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ message: validationMessage(error, 'E-mail inválido.'), issues: error.issues });
+    }
+
+    return next(error);
+  }
+});
+
+app.post('/auth/reset-password', async (req, res, next) => {
+  try {
+    const payload = resetPasswordSchema.parse(req.body);
+    const resetTokenHash = hashPasswordResetToken(payload.token);
+    const user = await prisma.user.findFirst({
+      where: {
+        resetTokenHash,
+        resetTokenExpiresAt: {
+          gt: new Date(),
+        },
+      },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Token inválido ou expirado. Solicite uma nova recuperação de senha.' });
+    }
+
+    const passwordHash = await bcrypt.hash(payload.password, 10);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        passwordHash,
+        resetTokenHash: null,
+        resetTokenExpiresAt: null,
+      },
+    });
+
+    res.json({ message: 'Senha atualizada com sucesso. Faça login com sua nova senha.' });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ message: validationMessage(error, 'Dados de recuperação inválidos.'), issues: error.issues });
     }
 
     return next(error);

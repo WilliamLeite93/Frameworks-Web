@@ -14,6 +14,8 @@ const TODO_LIST_KEY = 'brainlog_sidebar_todos';
 
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 const userName = computed(() => authStore.userName);
+const authRouteNames = ['Login', 'Register', 'ForgotPassword', 'ResetPassword'];
+const isAuthRoute = computed(() => authRouteNames.includes(route.name));
 
 const isSidebarCollapsed = ref(false);
 const isDarkMode = ref(false);
@@ -155,8 +157,8 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="app-shell" :class="{ collapsed: isSidebarCollapsed }">
-    <aside class="app-sidebar">
+  <div class="app-shell" :class="{ collapsed: isSidebarCollapsed, 'auth-shell': isAuthRoute }">
+    <aside v-if="!isAuthRoute" class="app-sidebar">
       <div class="sidebar-header">
         <button
           type="button"
@@ -281,8 +283,8 @@ onUnmounted(() => {
     </aside>
 
     <div class="app-content">
-      <main class="content-main">
-        <div class="container">
+      <main class="content-main" :class="{ 'auth-main': isAuthRoute }">
+        <div :class="isAuthRoute ? 'auth-container' : 'container'">
           <RouterView />
         </div>
       </main>
@@ -299,11 +301,29 @@ onUnmounted(() => {
   display: block;
 }
 
+:global(.app-shell.auth-shell) {
+  grid-template-columns: 1fr;
+}
+
+.auth-main {
+  min-height: 100vh;
+  padding: 0;
+}
+
+.auth-container {
+  width: 100%;
+  min-height: 100vh;
+}
+
 .sidebar-user {
   border: 1px solid var(--bl-border);
   border-radius: var(--radius-sm);
   padding: 0.58rem 0.66rem;
   background: rgba(255, 255, 255, 0.6);
+}
+
+:global(body.theme-dark) .sidebar-user {
+  background: rgba(5, 54, 49, 0.72);
 }
 
 .sidebar-user small {
@@ -327,6 +347,10 @@ onUnmounted(() => {
   gap: 0.55rem;
 }
 
+:global(body.theme-dark) .todo-panel {
+  background: rgba(5, 54, 49, 0.72);
+}
+
 .todo-panel h3 {
   font-size: 0.88rem;
 }
@@ -342,6 +366,11 @@ onUnmounted(() => {
   border-radius: 10px;
   padding: 0.5rem 0.62rem;
   background: #ffffff;
+}
+
+:global(body.theme-dark) .todo-form input {
+  background: var(--bl-surface);
+  color: var(--bl-text);
 }
 
 .todo-form .btn {
@@ -369,6 +398,10 @@ onUnmounted(() => {
   align-items: flex-start;
   justify-content: space-between;
   gap: 0.45rem;
+}
+
+:global(body.theme-dark) .todo-list li {
+  background: rgba(1, 23, 21, 0.38);
 }
 
 .todo-list li.done span {
@@ -400,10 +433,20 @@ onUnmounted(() => {
   font-size: 0.75rem;
 }
 
+:global(body.theme-dark) .todo-remove {
+  background: var(--bl-surface);
+}
+
 .todo-remove:hover {
   color: var(--bl-danger);
   border-color: #fecaca;
   background: #fef2f2;
+}
+
+:global(body.theme-dark) .todo-remove:hover {
+  color: #5eead4;
+  border-color: rgba(45, 212, 191, 0.42);
+  background: rgba(20, 184, 166, 0.16);
 }
 
 .todo-empty {

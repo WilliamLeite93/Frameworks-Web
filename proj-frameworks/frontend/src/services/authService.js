@@ -35,3 +35,20 @@ export async function registerRequest(payload) {
     token: data.token,
   };
 }
+
+export async function forgotPasswordRequest(payload) {
+  const { data } = await api.post('/auth/forgot-password', {
+    email: payload.email.trim().toLowerCase(),
+  });
+
+  return data;
+}
+
+export async function resetPasswordRequest(payload) {
+  const { data } = await api.post('/auth/reset-password', {
+    token: payload.token.trim(),
+    password: String(payload.password ?? ''),
+  });
+
+  return data;
+}
