@@ -1,6 +1,7 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useAuthStore } from '@/store/auth';
+import { getSummariesByOwner } from '@/services/summaryService';
 import bgHomeImage from '@/assets/bg-home.png';
 import calendarioImage from '@/assets/calendario.png';
 import despertadorImage from '@/assets/despertador.png';
@@ -10,140 +11,254 @@ import livrosImage from '@/assets/livros.png';
 import ritmoImage from '@/assets/ritmo.png';
 
 const authStore = useAuthStore();
-const userName = computed(() => authStore.userName || 'Gabriel');
+const userName = computed(() => authStore.userName || 'Estudante');
+const summaries = ref([]);
+const loading = ref(false);
 
-const stats = [
+const weekLabels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+const tones = ['blue', 'violet', 'amber', 'mint', 'rose'];
+const weekDaysTotal = 7;
+
+const weekStart = computed(() => getWeekStart(new Date()));
+const weekSummaries = computed(() => summaries.value.filter((item) => new Date(item.createdAt).getTime() >= weekStart.value.getTime()));
+const todaySummaries = computed(() => summaries.value.filter((item) => isSameDay(new Date(item.createdAt), new Date())));
+const totalFiles = computed(() => summaries.value.reduce((total, item) => total + (item.files?.length || 0), 0));
+const weekFileCount = computed(() => weekSummaries.value.reduce((total, item) => total + (item.files?.length || 0), 0));
+const uniqueSubjects = computed(() => new Set(summaries.value.map((item) => item.subject).filter(Boolean)));
+const activeWeekDays = computed(() => new Set(weekSummaries.value.map((item) => new Date(item.createdAt).toDateString())));
+const weeklyProgress = computed(() => Math.round((activeWeekDays.value.size / weekDaysTotal) * 100));
+
+const streakDays = computed(() => {
+  const activeDays = new Set(summaries.value.map((item) => new Date(item.createdAt).toDateString()));
+  const cursor = new Date();
+  let streak = 0;
+
+  while (activeDays.has(cursor.toDateString())) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  return streak;
+});
+
+const stats = computed(() => [
   {
     label: 'Resumos salvos',
-    value: '120+',
-    detail: '26 esta semana',
+    value: String(summaries.value.length),
+    detail: `${weekSummaries.value.length} ${weekSummaries.value.length === 1 ? 'esta semana' : 'esta semana'}`,
     tone: 'mint',
     icon: 'RS',
     image: livrosImage,
   },
   {
     label: 'Disciplinas',
-    value: '14',
-    detail: '2 ativas hoje',
+    value: String(uniqueSubjects.value.size),
+    detail: `${todaySummaries.value.length} ${todaySummaries.value.length === 1 ? 'resumo hoje' : 'resumos hoje'}`,
     tone: 'violet',
     icon: 'DI',
     image: disciplinaImage,
   },
   {
-    label: 'Horas estudadas',
-    value: '32h',
-    detail: '+5h vs semana passada',
+    label: 'Anexos enviados',
+    value: String(totalFiles.value),
+    detail: `${weekFileCount.value} ${weekFileCount.value === 1 ? 'novo esta semana' : 'novos esta semana'}`,
     tone: 'amber',
-    icon: 'HE',
+    icon: 'AN',
     image: despertadorImage,
   },
   {
     label: 'Ritmo semanal',
-    value: '5 dias',
-    detail: 'Meta: 6 dias',
+    value: `${activeWeekDays.value.size} ${activeWeekDays.value.size === 1 ? 'dia' : 'dias'}`,
+    detail: 'Semana atual',
     tone: 'blue',
     icon: 'RW',
     image: ritmoImage,
+    progress: weeklyProgress.value,
   },
-];
+]);
 
-const weekData = [
-  { day: 'Seg', hours: 1.4, x: 6, y: 78 },
-  { day: 'Ter', hours: 2.4, x: 22, y: 66 },
-  { day: 'Qua', hours: 5.8, x: 43, y: 36 },
-  { day: 'Qui', hours: 7.2, x: 54, y: 25 },
-  { day: 'Sex', hours: 3.3, x: 70, y: 58 },
-  { day: 'Sab', hours: 6.1, x: 82, y: 36 },
-  { day: 'Dom', hours: 3.8, x: 96, y: 55 },
-];
+const summariesBySubject = computed(() => {
+  const grouped = new Map();
 
-const nextSteps = [
-  {
-    title: 'Revisar Matemática',
-    subtitle: 'Funções e equações',
-    time: 'Hoje - 19:00',
-    tone: 'mint',
-    icon: 'MA',
-  },
-  {
-    title: 'Revisar Resumo',
-    subtitle: 'História do Brasil',
-    time: 'Amanhã - 10:00',
-    tone: 'violet',
-    icon: 'HI',
-  },
-  {
-    title: 'Questões',
-    subtitle: 'Física - Mecânica',
-    time: 'Amanhã - 14:00',
-    tone: 'amber',
-    icon: 'FI',
-  },
-];
+  summaries.value.forEach((summary) => {
+    const subject = summary.subject || 'Sem matéria';
+    const current = grouped.get(subject) || { name: subject, summaries: 0, files: 0 };
+    current.summaries += 1;
+    current.files += summary.files?.length || 0;
+    grouped.set(subject, current);
+  });
 
-const subjects = [
-  {
-    name: 'Matemática',
-    detail: '6 resumos - 4h estudadas',
-    progress: 75,
-    tone: 'blue',
-  },
-  {
-    name: 'Física',
-    detail: '4 resumos - 3h estudadas',
-    progress: 60,
-    tone: 'violet',
-  },
-  {
-    name: 'História',
-    detail: '3 resumos - 2h estudadas',
-    progress: 40,
-    tone: 'amber',
-  },
-  {
-    name: 'Biologia',
-    detail: '2 resumos - 1h estudada',
-    progress: 25,
-    tone: 'mint',
-  },
-];
+  return [...grouped.values()].sort((a, b) => b.summaries - a.summaries);
+});
 
-const activities = [
-  {
-    title: 'Resumo salvo',
-    detail: 'Funções do 1º grau - Matemática',
-    time: 'Há 2h',
-    tone: 'mint',
-  },
-  {
-    title: 'Arquivo enviado',
-    detail: 'Apostila Física - Mecânica.pdf',
-    time: 'Há 4h',
-    tone: 'rose',
-  },
-  {
-    title: 'Questões concluídas',
-    detail: '20 questões de Física',
-    time: 'Há 6h',
-    tone: 'violet',
-  },
-  {
-    title: 'Meta semanal atualizada',
-    detail: 'Estudar 6 dias por semana',
-    time: 'Há 1d',
-    tone: 'mint',
-  },
-];
+const subjects = computed(() => {
+  const max = Math.max(1, ...summariesBySubject.value.map((item) => item.summaries));
 
-const goalDays = [
-  { day: 'Seg', done: true },
-  { day: 'Ter', done: true },
-  { day: 'Qua', done: true },
-  { day: 'Qui', done: true },
-  { day: 'Sex', done: true },
-  { day: 'Sáb', done: false },
-  { day: 'Dom', done: false },
-];
+  return summariesBySubject.value.slice(0, 4).map((subject, index) => ({
+    name: subject.name,
+    detail: `${subject.summaries} ${subject.summaries === 1 ? 'resumo' : 'resumos'} - ${subject.files} ${subject.files === 1 ? 'anexo' : 'anexos'}`,
+    progress: Math.round((subject.summaries / max) * 100),
+    tone: tones[index % tones.length],
+  }));
+});
+
+const weekData = computed(() => {
+  const start = new Date(weekStart.value);
+  const maxCount = Math.max(4, ...weekLabels.map((_, index) => countSummariesOn(addDays(start, index))));
+
+  return weekLabels.map((day, index) => {
+    const count = countSummariesOn(addDays(start, index));
+    const x = 74 + index * 71;
+    const y = 210 - (count / maxCount) * 174;
+
+    return { day, count, x, y: Math.max(36, y) };
+  });
+});
+
+const chartPoints = computed(() => weekData.value.map((point) => `${point.x},${point.y}`).join(' '));
+const chartAreaPoints = computed(() => {
+  const first = weekData.value[0];
+  const last = weekData.value[weekData.value.length - 1];
+  if (!first || !last) return '';
+  return `${first.x},210 ${chartPoints.value} ${last.x},210`;
+});
+const chartScale = computed(() => {
+  const maxCount = Math.max(4, ...weekData.value.map((item) => item.count));
+  return [maxCount, Math.round(maxCount * 0.75), Math.round(maxCount * 0.5), Math.max(1, Math.round(maxCount * 0.25)), 0];
+});
+
+const nextSteps = computed(() => {
+  return [...summaries.value]
+    .filter((item) => item.status !== 'Revisado')
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .slice(0, 3)
+    .map((summary, index) => ({
+      title: `Revisar ${summary.subject || 'resumo'}`,
+      subtitle: summary.title,
+      time: summary.status || 'Novo',
+      tone: tones[index % tones.length],
+      icon: initials(summary.subject),
+    }));
+});
+
+const activities = computed(() => {
+  const items = [];
+
+  summaries.value.forEach((summary) => {
+    items.push({
+      id: `summary-${summary.id}`,
+      title: 'Resumo salvo',
+      detail: `${summary.title} - ${summary.subject}`,
+      time: relativeTime(summary.createdAt),
+      tone: 'mint',
+      date: summary.createdAt,
+    });
+
+    summary.files?.forEach((file) => {
+      items.push({
+        id: `file-${summary.id}-${file.id || file.fileName}`,
+        title: 'Arquivo enviado',
+        detail: file.fileName,
+        time: relativeTime(summary.createdAt),
+        tone: 'blue',
+        date: summary.createdAt,
+      });
+    });
+
+    if (summary.status === 'Revisado') {
+      items.push({
+        id: `reviewed-${summary.id}`,
+        title: 'Resumo revisado',
+        detail: `${summary.title} - ${summary.subject}`,
+        time: relativeTime(summary.createdAt),
+        tone: 'amber',
+        date: summary.createdAt,
+      });
+    }
+  });
+
+  return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 4);
+});
+
+const goalDays = computed(() => {
+  const start = new Date(weekStart.value);
+
+  return weekLabels.map((day, index) => ({
+    day,
+    done: activeWeekDays.value.has(addDays(start, index).toDateString()),
+  }));
+});
+
+const weeklyInsight = computed(() => {
+  if (!summaries.value.length) return 'Nenhum resumo registrado ainda.';
+  if (!weekSummaries.value.length) return 'Nenhum resumo novo nesta semana.';
+  return `${weekSummaries.value.length} ${weekSummaries.value.length === 1 ? 'resumo registrado' : 'resumos registrados'} nesta semana.`;
+});
+
+function getWeekStart(date) {
+  const start = new Date(date);
+  const day = start.getDay() || 7;
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - day + 1);
+  return start;
+}
+
+function addDays(date, amount) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + amount);
+  return next;
+}
+
+function isSameDay(left, right) {
+  return left.toDateString() === right.toDateString();
+}
+
+function countSummariesOn(date) {
+  return summaries.value.filter((item) => isSameDay(new Date(item.createdAt), date)).length;
+}
+
+function initials(value) {
+  return String(value || 'BL')
+    .split(' ')
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+}
+
+function relativeTime(date) {
+  const timestamp = new Date(date).getTime();
+  if (!timestamp) return 'Agora';
+
+  const diff = Date.now() - timestamp;
+  const minutes = Math.max(1, Math.floor(diff / 60000));
+  if (minutes < 60) return `Há ${minutes}min`;
+
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `Há ${hours}h`;
+
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `Há ${days}d`;
+
+  return new Date(date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+}
+
+async function loadHomeData() {
+  if (!authStore.user?.id) {
+    summaries.value = [];
+    return;
+  }
+
+  loading.value = true;
+  try {
+    summaries.value = await getSummariesByOwner(authStore.user.id);
+  } finally {
+    loading.value = false;
+  }
+}
+
+onMounted(loadHomeData);
+watch(() => authStore.user?.id, loadHomeData);
 </script>
 
 <template>
@@ -166,11 +281,11 @@ const goalDays = [
               aria-hidden="true"
             />
 
-            <span class="fallback-text">7</span>
+            <span class="fallback-text">{{ streakDays }}</span>
           </span>
 
           <div>
-            <strong>7 dias</strong>
+            <strong>{{ streakDays }} {{ streakDays === 1 ? 'dia' : 'dias' }}</strong>
             <small>Sequência atual</small>
           </div>
         </div>
@@ -178,16 +293,17 @@ const goalDays = [
         <button
           type="button"
           class="icon-button"
-          aria-label="Notificações"
+          aria-label="Atualizar painel"
+          @click="loadHomeData"
         >
-          3
+          {{ loading ? '...' : activities.length }}
         </button>
 
         <RouterLink
           to="/upload"
           class="btn btn-primary"
         >
-          + Nova tarefa
+          + Novo resumo
         </RouterLink>
       </div>
     </header>
@@ -225,7 +341,7 @@ const goalDays = [
             v-if="stat.label === 'Ritmo semanal'"
             class="mini-progress"
           >
-            <i />
+            <i :style="{ width: `${stat.progress}%` }" />
           </span>
         </div>
       </article>
@@ -246,7 +362,7 @@ const goalDays = [
 
         <div
           class="chart-wrap"
-          aria-label="Gráfico de horas estudadas na semana"
+          aria-label="Gráfico de resumos enviados na semana"
         >
           <svg
             viewBox="0 0 520 230"
@@ -254,7 +370,7 @@ const goalDays = [
             aria-labelledby="weekly-title"
           >
             <title id="weekly-title">
-              Horas estudadas por dia
+              Resumos enviados por dia
             </title>
 
             <defs>
@@ -314,53 +430,53 @@ const goalDays = [
                 x="10"
                 y="40"
               >
-                8h
+                {{ chartScale[0] }}
               </text>
 
               <text
                 x="10"
                 y="86"
               >
-                6h
+                {{ chartScale[1] }}
               </text>
 
               <text
                 x="10"
                 y="132"
               >
-                4h
+                {{ chartScale[2] }}
               </text>
 
               <text
                 x="10"
                 y="178"
               >
-                2h
+                {{ chartScale[3] }}
               </text>
 
               <text
                 x="10"
                 y="214"
               >
-                0h
+                0
               </text>
             </g>
 
-            <path
+            <polygon
               class="chart-area"
-              d="M74 178 C112 140, 126 150, 162 152 C202 154, 206 66, 250 66 C284 66, 286 80, 314 50 C340 90, 334 130, 378 140 C416 144, 416 72, 438 82 C466 96, 478 120, 500 132 L500 210 L74 210 Z"
+              :points="chartAreaPoints"
             />
 
-            <path
+            <polyline
               class="chart-line"
-              d="M74 178 C112 140, 126 150, 162 152 C202 154, 206 66, 250 66 C284 66, 286 80, 314 50 C340 90, 334 130, 378 140 C416 144, 416 72, 438 82 C466 96, 478 120, 500 132"
+              :points="chartPoints"
             />
 
             <g>
               <circle
                 v-for="point in weekData"
                 :key="point.day"
-                :cx="point.x * 4.44 + 47"
+                :cx="point.x"
                 :cy="point.y"
                 r="4.5"
               />
@@ -370,7 +486,7 @@ const goalDays = [
               <text
                 v-for="point in weekData"
                 :key="`${point.day}-label`"
-                :x="point.x * 4.44 + 42"
+                :x="point.x - 8"
                 y="222"
               >
                 {{ point.day }}
@@ -380,7 +496,7 @@ const goalDays = [
         </div>
 
         <p class="insight-note">
-          Você está acima da sua média. Continue assim!
+          {{ weeklyInsight }}
         </p>
       </article>
 
@@ -389,11 +505,11 @@ const goalDays = [
           <h2>Próximos passos</h2>
         </div>
 
-        <div class="step-list">
+        <div v-if="nextSteps.length" class="step-list">
           <RouterLink
             v-for="step in nextSteps"
-            :key="step.title"
-            to="/evolution"
+            :key="`${step.title}-${step.subtitle}`"
+            to="/abstracts"
             class="step-row"
           >
             <span
@@ -413,11 +529,13 @@ const goalDays = [
           </RouterLink>
         </div>
 
+        <p v-else class="dashboard-empty">Nenhum resumo pendente de revisão.</p>
+
         <RouterLink
           to="/evolution"
           class="text-link"
         >
-          Ver agenda completa &gt;
+          Ver evolução completa &gt;
         </RouterLink>
       </article>
 
@@ -436,7 +554,7 @@ const goalDays = [
           </RouterLink>
         </div>
 
-        <div class="subject-list">
+        <div v-if="subjects.length" class="subject-list">
           <div
             v-for="subject in subjects"
             :key="subject.name"
@@ -461,21 +579,23 @@ const goalDays = [
             <b>{{ subject.progress }}%</b>
           </div>
         </div>
+
+        <p v-else class="dashboard-empty">Nenhuma disciplina registrada ainda.</p>
       </article>
 
       <article class="surface-card activity-card">
         <div class="card-header">
           <h2>Atividade recente</h2>
 
-          <RouterLink to="/dashboard">
+          <RouterLink to="/abstracts">
             Ver todas
           </RouterLink>
         </div>
 
-        <div class="activity-list">
+        <div v-if="activities.length" class="activity-list">
           <div
             v-for="activity in activities"
-            :key="activity.title"
+            :key="activity.id"
             class="activity-row"
           >
             <span
@@ -491,28 +611,30 @@ const goalDays = [
             <time>{{ activity.time }}</time>
           </div>
         </div>
+
+        <p v-else class="dashboard-empty">Nenhuma atividade real registrada ainda.</p>
       </article>
 
       <article class="surface-card goals-card">
         <div class="card-header">
-          <h2>Metas desta semana</h2>
+          <h2>Registro da semana</h2>
 
-          <button type="button">
-            Editar
-          </button>
+          <RouterLink to="/upload">
+            Adicionar
+          </RouterLink>
         </div>
 
         <div class="goal-content">
-          <div class="goal-ring">
-            <span>83%</span>
+          <div class="goal-ring" :style="{ '--goal-progress': `${weeklyProgress}%` }">
+            <span>{{ weeklyProgress }}%</span>
           </div>
 
           <div>
-            <strong>Meta: 6 dias de estudo</strong>
-            <p>5 de 6 dias concluídos</p>
+            <strong>Dias com uploads</strong>
+            <p>{{ activeWeekDays.size }} de {{ weekDaysTotal }} dias com resumos</p>
 
             <span class="progress-line wide">
-              <i style="width: 83%" />
+              <i :style="{ width: `${weeklyProgress}%` }" />
             </span>
           </div>
         </div>
@@ -1003,33 +1125,37 @@ const goalDays = [
   margin-top: 0.82rem;
 }
 
+.dashboard-empty {
+  min-height: 5rem;
+  border: 1px dashed var(--bl-border);
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  padding: 0.8rem;
+  color: var(--bl-muted);
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+:global(body.theme-dark) .dashboard-empty {
+  background: rgba(2, 8, 23, 0.34);
+  border-color: rgba(148, 163, 184, 0.16);
+}
+
 .focus-panel {
   min-height: 290px;
   border-radius: var(--radius-lg);
-  padding: 2.2rem;
-  display: grid;
-  align-content: center;
-  gap: 1.05rem;
-  color: #f8fafc;
-  background:
-    radial-gradient(
-      circle at 26% 22%,
-      rgba(45, 212, 191, 0.42),
-      transparent 18%
-    ),
-    radial-gradient(
-      circle at 100% 78%,
-      rgba(6, 182, 212, 0.22),
-      transparent 28%
-    ),
-    linear-gradient(145deg, #064e49, #042f2e);
+  padding: 0;
+  overflow: hidden;
+  background: #020817;
   box-shadow: var(--shadow-strong);
 }
 
 .focus-panel img {
   width: 100%;
   height: 100%;
-  min-height: inherit;
+  min-height: 290px;
   display: block;
   object-fit: cover;
 }
@@ -1085,8 +1211,8 @@ const goalDays = [
   display: grid;
   place-items: center;
   background: conic-gradient(
-    var(--bl-primary) 0 83%,
-    var(--bl-border) 83% 100%
+    var(--bl-primary) 0 var(--goal-progress, 0%),
+    var(--bl-border) var(--goal-progress, 0%) 100%
   );
   position: relative;
 }
@@ -1172,9 +1298,9 @@ const goalDays = [
 }
 
 :global(body.theme-dark) .focus-panel {
-  border: 1px solid rgba(18, 214, 196, 0.28);
+  border: 0;
   background: #020817;
-  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  box-shadow: 0 22px 50px rgba(0, 0, 0, 0.38);
 }
 
 :global(body.theme-dark) .mini-progress,
