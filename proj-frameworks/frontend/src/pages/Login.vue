@@ -3,6 +3,7 @@ import { reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/store/auth';
 import bgLogin from '@/assets/bg-login.png';
+import brainLogLogo from '@/assets/brainlog-logo.png';
 
 const route = useRoute();
 const router = useRouter();
@@ -52,7 +53,7 @@ async function handleLogin() {
   <section class="login-page fade-in-up" :style="{ backgroundImage: `url(${bgLogin})` }">
     <div class="login-copy">
       <RouterLink to="/" class="login-brand" aria-label="BrainLog - página inicial">
-        <span class="brand-mark">BL</span>
+        <img :src="brainLogLogo" alt="" class="brand-mark" aria-hidden="true" />
         <span>BrainLog</span>
       </RouterLink>
 
@@ -195,17 +196,10 @@ async function handleLogin() {
 }
 
 .brand-mark {
-  width: 2.35rem;
-  height: 2.35rem;
-  border: 2px solid rgba(8, 117, 109, 0.28);
-  border-radius: 14px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.78);
-  color: #0f9f94;
-  font-size: 0.78rem;
-  box-shadow: 0 14px 34px rgba(8, 117, 109, 0.14);
+  width: 2.45rem;
+  height: 2.45rem;
+  display: block;
+  object-fit: contain;
 }
 
 .login-heading {
