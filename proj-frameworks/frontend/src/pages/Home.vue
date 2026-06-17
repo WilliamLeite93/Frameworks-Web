@@ -86,17 +86,20 @@ const steps = [
 }
 
 .hero-focus-card {
+  position: relative;
   width: 100%;
   height: 100%;
   min-height: 258px;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  display: block;
+  background: #023f3b;
 }
 
 .hero-focus-card img {
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: -2.5% -9%;
+  width: 118%;
+  height: 105%;
   display: block;
   object-fit: cover;
 }
