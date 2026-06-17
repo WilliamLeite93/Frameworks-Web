@@ -64,11 +64,7 @@ async function handleResetPassword() {
     <p>Crie uma nova senha para voltar a acessar sua conta.</p>
 
     <form @submit.prevent="handleResetPassword">
-      <div class="field">
-        <label for="token">Token de recuperação</label>
-        <input id="token" v-model.trim="form.token" type="text" placeholder="Cole o token recebido" />
-      </div>
-
+    
       <div class="field">
         <label for="password">Nova senha</label>
         <input
